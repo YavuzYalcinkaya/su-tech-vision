@@ -11,6 +11,7 @@ const navItems = [
   { name: "Referanslar", path: "/referanslar" },
   { name: "İlanlar", path: "/ilanlar" },
   { name: "İletişim", path: "/iletisim" },
+  { name: "Giriş", path: "/giris" },
 ];
 
 export default function Header() {
