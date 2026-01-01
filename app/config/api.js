@@ -1,3 +1,3 @@
-// API Base URL - uses Next.js proxy to avoid CORS issues
-export const API_BASE_URL = '/api';
+// API Base URL - Direct connection to Railway backend
+export const API_BASE_URL = 'https://sutechvision-sutechvision.up.railway.app/api';
 

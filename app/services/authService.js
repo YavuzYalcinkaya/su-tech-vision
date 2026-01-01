@@ -24,7 +24,17 @@ class AuthService {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || 'Giriş başarısız oldu');
+        
+        // Provide user-friendly error messages based on status code
+        if (response.status === 401 || response.status === 403) {
+          throw new Error('Kullanıcı adı veya şifre hatalı.');
+        } else if (response.status === 404) {
+          throw new Error('Kullanıcı bulunamadı.');
+        } else if (response.status >= 500) {
+          throw new Error('Sunucu hatası. Lütfen daha sonra tekrar deneyin.');
+        }
+        
+        throw new Error(errorData.message || 'Giriş işlemi başarısız oldu. Lütfen bilgilerinizi kontrol edin.');
       }
 
       const data = await response.json();
@@ -39,6 +49,64 @@ class AuthService {
       return data;
     } catch (error) {
       console.error('Sign in error:', error);
+      
+      // Handle network errors
+      if (error.message === 'Failed to fetch' || error.name === 'TypeError') {
+        throw new Error('Sunucuya bağlanılamadı. İnternet bağlantınızı kontrol edin.');
+      }
+      
+      throw error;
+    }
+  }
+
+  /**
+   * Sign up new user
+   * @param {Object} userData - User registration data
+   * @param {string} userData.surname - User surname
+   * @param {string} userData.username - Username
+   * @param {string} userData.password - Password
+   * @param {string} userData.email - Email address
+   * @param {string} userData.phone - Phone number
+   * @param {string} userData.createTime - Creation time (YYYY-MM-DD format)
+   * @param {boolean} userData.isActive - Is user active
+   * @param {string} userData.role - User role (ADMIN, USER, etc.)
+   * @returns {Promise<Object>} Response data containing user info
+   */
+  async signUp(userData) {
+    try {
+      const response = await fetch(`${API_BASE_URL}/authentication/sign-up`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(userData),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        
+        // Provide user-friendly error messages based on status code
+        if (response.status === 409) {
+          throw new Error('Bu kullanıcı adı veya e-posta adresi zaten kullanılıyor.');
+        } else if (response.status === 400) {
+          throw new Error('Lütfen tüm alanları doğru şekilde doldurun.');
+        } else if (response.status >= 500) {
+          throw new Error('Sunucu hatası. Lütfen daha sonra tekrar deneyin.');
+        }
+        
+        throw new Error(errorData.message || 'Kayıt işlemi başarısız oldu. Lütfen bilgilerinizi kontrol edin.');
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Sign up error:', error);
+      
+      // Handle network errors
+      if (error.message === 'Failed to fetch' || error.name === 'TypeError') {
+        throw new Error('Sunucuya bağlanılamadı. İnternet bağlantınızı kontrol edin.');
+      }
+      
       throw error;
     }
   }

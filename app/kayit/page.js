@@ -1,11 +1,14 @@
 "use client";
 import Link from "next/link";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import authService from "../services/authService";
 
 export default function SignUpPage() {
+  const router = useRouter();
   const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
+    username: "",
+    surname: "",
     email: "",
     phone: "",
     password: "",
@@ -13,15 +16,51 @@ export default function SignUpPage() {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Sign up logic will be implemented here
+    setIsLoading(true);
+    setError("");
+    setSuccess(false);
+
+    // Validate password match
     if (formData.password !== formData.confirmPassword) {
-      alert("Şifreler eşleşmiyor!");
+      setError("Şifreler eşleşmiyor!");
+      setIsLoading(false);
       return;
     }
-    console.log("Sign Up:", formData);
+
+    try {
+      // Prepare data for API
+      const userData = {
+        surname: formData.surname,
+        username: formData.username,
+        password: formData.password,
+        email: formData.email,
+        phone: formData.phone,
+        createTime: new Date().toISOString().split('T')[0], // YYYY-MM-DD format
+        isActive: true,
+        role: "USER", // Default role
+      };
+
+      const response = await authService.signUp(userData);
+      
+      console.log("Kayıt başarılı:", response);
+      setSuccess(true);
+
+      // Redirect to login page after 2 seconds
+      setTimeout(() => {
+        router.push("/giris");
+      }, 2000);
+    } catch (err) {
+      setError(err.message || "Kayıt yapılırken bir hata oluştu");
+      console.error("Sign up error:", err);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleChange = (e) => {
@@ -51,17 +90,33 @@ export default function SignUpPage() {
             <p className="text-slate-400">Birkaç adımda üye olun</p>
           </div>
 
+          {/* Success Message */}
+          {success && (
+            <div className="mb-6 p-4 bg-green-500/10 border border-green-500/50 rounded-xl">
+              <p className="text-green-400 text-sm text-center">
+                Kayıt başarılı! Giriş sayfasına yönlendiriliyorsunuz...
+              </p>
+            </div>
+          )}
+
+          {/* Error Message */}
+          {error && (
+            <div className="mb-6 p-4 bg-red-500/10 border border-red-500/50 rounded-xl">
+              <p className="text-red-400 text-sm text-center">{error}</p>
+            </div>
+          )}
+
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Name Fields - Side by Side */}
             <div className="grid sm:grid-cols-2 gap-6">
-              {/* First Name */}
+              {/* Username */}
               <div>
                 <label
-                  htmlFor="firstName"
+                  htmlFor="username"
                   className="block text-sm font-medium text-slate-300 mb-2"
                 >
-                  Ad
+                  Kullanıcı Adı
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -81,21 +136,22 @@ export default function SignUpPage() {
                   </div>
                   <input
                     type="text"
-                    id="firstName"
-                    name="firstName"
-                    value={formData.firstName}
+                    id="username"
+                    name="username"
+                    value={formData.username}
                     onChange={handleChange}
                     required
-                    className="w-full pl-12 pr-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all"
-                    placeholder="Adınız"
+                    disabled={isLoading}
+                    className="w-full pl-12 pr-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    placeholder="Kullanıcı adınız"
                   />
                 </div>
               </div>
 
-              {/* Last Name */}
+              {/* Surname */}
               <div>
                 <label
-                  htmlFor="lastName"
+                  htmlFor="surname"
                   className="block text-sm font-medium text-slate-300 mb-2"
                 >
                   Soyad
@@ -118,12 +174,13 @@ export default function SignUpPage() {
                   </div>
                   <input
                     type="text"
-                    id="lastName"
-                    name="lastName"
-                    value={formData.lastName}
+                    id="surname"
+                    name="surname"
+                    value={formData.surname}
                     onChange={handleChange}
                     required
-                    className="w-full pl-12 pr-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all"
+                    disabled={isLoading}
+                    className="w-full pl-12 pr-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                     placeholder="Soyadınız"
                   />
                 </div>
@@ -161,7 +218,8 @@ export default function SignUpPage() {
                   value={formData.email}
                   onChange={handleChange}
                   required
-                  className="w-full pl-12 pr-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all"
+                  disabled={isLoading}
+                  className="w-full pl-12 pr-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   placeholder="ornek@email.com"
                 />
               </div>
@@ -198,8 +256,9 @@ export default function SignUpPage() {
                   value={formData.phone}
                   onChange={handleChange}
                   required
-                  className="w-full pl-12 pr-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all"
-                  placeholder="+90 (555) 123 45 67"
+                  disabled={isLoading}
+                  className="w-full pl-12 pr-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  placeholder="5551234567"
                 />
               </div>
             </div>
@@ -237,8 +296,9 @@ export default function SignUpPage() {
                     value={formData.password}
                     onChange={handleChange}
                     required
-                    minLength={8}
-                    className="w-full pl-12 pr-12 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all"
+                    minLength={3}
+                    disabled={isLoading}
+                    className="w-full pl-12 pr-12 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                     placeholder="••••••••"
                   />
                   <button
@@ -316,8 +376,9 @@ export default function SignUpPage() {
                     value={formData.confirmPassword}
                     onChange={handleChange}
                     required
-                    minLength={8}
-                    className="w-full pl-12 pr-12 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all"
+                    minLength={3}
+                    disabled={isLoading}
+                    className="w-full pl-12 pr-12 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                     placeholder="••••••••"
                   />
                   <button
@@ -389,9 +450,36 @@ export default function SignUpPage() {
             {/* Submit Button */}
             <button
               type="submit"
-              className="w-full btn-primary text-center font-semibold"
+              disabled={isLoading}
+              className="w-full btn-primary text-center font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
-              Hesap Oluştur
+              {isLoading ? (
+                <>
+                  <svg
+                    className="animate-spin h-5 w-5 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                  </svg>
+                  Hesap oluşturuluyor...
+                </>
+              ) : (
+                "Hesap Oluştur"
+              )}
             </button>
 
             {/* Divider */}
