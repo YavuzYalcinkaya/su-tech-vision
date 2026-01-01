@@ -1,3 +1,3 @@
-// API Base URL - Direct connection to Railway backend
-export const API_BASE_URL = 'https://sutechvision-sutechvision.up.railway.app/api';
+// API Base URL from environment variables
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
