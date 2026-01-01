@@ -39,11 +39,12 @@ class AuthService {
 
       const data = await response.json();
       
-      // Store token if needed
+      // Store token and user info
       if (data.token) {
         localStorage.setItem('authToken', data.token);
         localStorage.setItem('userId', data.id);
         localStorage.setItem('userRole', data.role);
+        localStorage.setItem('username', data.username);
       }
 
       return data;
@@ -118,6 +119,7 @@ class AuthService {
     localStorage.removeItem('authToken');
     localStorage.removeItem('userId');
     localStorage.removeItem('userRole');
+    localStorage.removeItem('username');
   }
 
   /**

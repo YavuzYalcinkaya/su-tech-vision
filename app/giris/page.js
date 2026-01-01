@@ -28,12 +28,8 @@ export default function LoginPage() {
       // Login successful
       console.log("Login başarılı:", response);
       
-      // Redirect based on role or to home page
-      if (response.role === "ADMIN") {
-        router.push("/admin");
-      } else {
-        router.push("/");
-      }
+      // Force reload to update header
+      window.location.href = "/";
     } catch (err) {
       setError(err.message || "Giriş yapılırken bir hata oluştu");
       console.error("Login error:", err);

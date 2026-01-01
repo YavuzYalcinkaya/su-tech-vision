@@ -1,7 +1,8 @@
 "use client";
 import Link from "next/link";
-import { useState } from "react";
-import { usePathname } from "next/navigation";
+import { useState, useEffect } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import authService from "../services/authService";
 
 const navItems = [
   { name: "Anasayfa", path: "/" },
@@ -11,12 +12,49 @@ const navItems = [
   { name: "Referanslar", path: "/referanslar" },
   { name: "İlanlar", path: "/ilanlar" },
   { name: "İletişim", path: "/iletisim" },
-  { name: "Giriş", path: "/giris" },
 ];
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [user, setUser] = useState(null);
   const pathname = usePathname();
+  const router = useRouter();
+
+  useEffect(() => {
+    // Check if user is logged in
+    const checkUser = () => {
+      if (typeof window !== 'undefined') {
+        const username = localStorage.getItem('username');
+        const token = localStorage.getItem('authToken');
+        if (username && token) {
+          setUser({ username });
+        } else {
+          setUser(null);
+        }
+      }
+    };
+
+    checkUser();
+
+    // Listen for storage changes (when user logs in/out in another tab)
+    window.addEventListener('storage', checkUser);
+    
+    // Custom event for same-tab login
+    window.addEventListener('userLogin', checkUser);
+    
+    return () => {
+      window.removeEventListener('storage', checkUser);
+      window.removeEventListener('userLogin', checkUser);
+    };
+  }, []);
+
+  const handleSignOut = () => {
+    authService.signOut();
+    localStorage.removeItem('username');
+    setUser(null);
+    setIsMenuOpen(false);
+    router.push('/');
+  };
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-slate-950/80 backdrop-blur-xl border-b border-cyan-500/20">
@@ -55,6 +93,41 @@ export default function Header() {
                 />
               </Link>
             ))}
+            
+            {/* User Section */}
+            {user ? (
+              <div className="flex items-center gap-3 ml-4 pl-4 border-l border-slate-700">
+                <div className="flex items-center gap-2 px-3 py-2 bg-slate-800/50 rounded-lg">
+                  <svg
+                    className="w-5 h-5 text-cyan-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                    />
+                  </svg>
+                  <span className="text-sm font-medium text-white">{user.username}</span>
+                </div>
+                <button
+                  onClick={handleSignOut}
+                  className="px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg text-sm font-medium transition-all duration-300 border border-red-500/30 hover:border-red-500/50"
+                >
+                  Çıkış Yap
+                </button>
+              </div>
+            ) : (
+              <Link
+                href="/giris"
+                className="ml-4 pl-4 border-l border-slate-700 px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white rounded-lg text-sm font-medium transition-all duration-300 shadow-lg shadow-cyan-500/25"
+              >
+                Giriş Yap
+              </Link>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -90,7 +163,7 @@ export default function Header() {
         {/* Mobile Navigation */}
         <div
           className={`lg:hidden overflow-hidden transition-all duration-300 ${
-            isMenuOpen ? "max-h-96 pb-4" : "max-h-0"
+            isMenuOpen ? "max-h-[600px] pb-4" : "max-h-0"
           }`}
         >
           <div className="flex flex-col gap-1 pt-2">
@@ -108,6 +181,44 @@ export default function Header() {
                 {item.name}
               </Link>
             ))}
+            
+            {/* Mobile User Section */}
+            {user ? (
+              <>
+                <div className="px-4 py-3 mt-2 border-t border-slate-700">
+                  <div className="flex items-center gap-2 mb-3">
+                    <svg
+                      className="w-5 h-5 text-cyan-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                      />
+                    </svg>
+                    <span className="text-sm font-medium text-white">{user.username}</span>
+                  </div>
+                  <button
+                    onClick={handleSignOut}
+                    className="w-full px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg text-sm font-medium transition-all duration-300 border border-red-500/30"
+                  >
+                    Çıkış Yap
+                  </button>
+                </div>
+              </>
+            ) : (
+              <Link
+                href="/giris"
+                onClick={() => setIsMenuOpen(false)}
+                className="mx-4 mt-2 px-4 py-3 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-lg text-sm font-medium text-center transition-all duration-300"
+              >
+                Giriş Yap
+              </Link>
+            )}
           </div>
         </div>
       </nav>
