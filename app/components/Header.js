@@ -16,6 +16,7 @@ const navItems = [
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isAdminMenuOpen, setIsAdminMenuOpen] = useState(false);
   const [user, setUser] = useState(null);
   const pathname = usePathname();
   const router = useRouter();
@@ -26,8 +27,9 @@ export default function Header() {
       if (typeof window !== 'undefined') {
         const username = localStorage.getItem('username');
         const token = localStorage.getItem('authToken');
+        const role = localStorage.getItem('userRole');
         if (username && token) {
-          setUser({ username });
+          setUser({ username, role });
         } else {
           setUser(null);
         }
@@ -93,6 +95,93 @@ export default function Header() {
                 />
               </Link>
             ))}
+            
+            {/* Admin Dropdown Menu */}
+            {user && user.role === "ADMIN" && (
+              <div 
+                className="relative"
+                onMouseEnter={() => setIsAdminMenuOpen(true)}
+                onMouseLeave={() => setIsAdminMenuOpen(false)}
+              >
+                <button
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 relative group flex items-center gap-2 ${
+                    pathname.startsWith('/yonetim')
+                      ? "text-cyan-400"
+                      : "text-slate-300 hover:text-white"
+                  }`}
+                >
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                    />
+                  </svg>
+                  Yönetim Paneli
+                  <svg
+                    className={`w-4 h-4 transition-transform duration-200 ${
+                      isAdminMenuOpen ? 'rotate-180' : ''
+                    }`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 9l-7 7-7-7"
+                    />
+                  </svg>
+                  <span
+                    className={`absolute bottom-0 left-1/2 -translate-x-1/2 h-0.5 bg-gradient-to-r from-cyan-400 to-blue-500 transition-all duration-300 ${
+                      pathname.startsWith('/yonetim') ? "w-full" : "w-0 group-hover:w-full"
+                    }`}
+                  />
+                </button>
+                
+                {/* Dropdown */}
+                <div
+                  className={`absolute top-full mt-2 left-0 w-56 bg-slate-900/95 backdrop-blur-xl border border-slate-700 rounded-xl shadow-2xl overflow-hidden transition-all duration-200 ${
+                    isAdminMenuOpen ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-2'
+                  }`}
+                >
+                  <div className="py-2">
+                    <Link
+                      href="/yonetim/kullanici-yonetimi"
+                      className="flex items-center gap-3 px-4 py-3 text-sm text-slate-300 hover:text-white hover:bg-slate-800/50 transition-all"
+                    >
+                      <svg
+                        className="w-5 h-5 text-cyan-400"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
+                        />
+                      </svg>
+                      Kullanıcı Yönetimi
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            )}
             
             {/* User Section */}
             {user ? (
@@ -181,6 +270,35 @@ export default function Header() {
                 {item.name}
               </Link>
             ))}
+            
+            {/* Mobile Admin Menu */}
+            {user && user.role === "ADMIN" && (
+              <div className="border-t border-slate-700 mt-2 pt-2">
+                <div className="px-4 py-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                  Yönetim Paneli
+                </div>
+                <Link
+                  href="/yonetim/kullanici-yonetimi"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white transition-all duration-300"
+                >
+                  <svg
+                    className="w-5 h-5 text-cyan-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
+                    />
+                  </svg>
+                  Kullanıcı Yönetimi
+                </Link>
+              </div>
+            )}
             
             {/* Mobile User Section */}
             {user ? (
