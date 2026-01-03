@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import authService from "../../services/authService";
 
 export default function KullaniciYonetimiPage() {
   const router = useRouter();
@@ -10,9 +11,10 @@ export default function KullaniciYonetimiPage() {
 
   useEffect(() => {
     // Check if user is admin
-    const checkAdmin = () => {
+    const checkAdminAndFetchUsers = async () => {
       if (typeof window !== 'undefined') {
         const role = localStorage.getItem('userRole');
+        console.log(role);
         const token = localStorage.getItem('authToken');
         
         if (!token) {
@@ -24,17 +26,30 @@ export default function KullaniciYonetimiPage() {
           router.push('/');
           return;
         }
+
+        // Fetch users
+        try {
+          setIsLoading(true);
+          const userData = await authService.getAllUsers();
+          setUsers(userData);
+          setError("");
+        } catch (err) {
+          setError(err.message || 'Kullanıcılar yüklenirken bir hata oluştu');
+          console.error('Fetch users error:', err);
+        } finally {
+          setIsLoading(false);
+        }
       }
     };
 
-    checkAdmin();
-    
-    // TODO: Fetch users from API
-    // For now, showing placeholder
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 500);
+    checkAdminAndFetchUsers();
   }, [router]);
+
+  // Calculate stats
+  const totalUsers = users.length;
+  const activeUsers = users.filter(u => u.isActive).length;
+  const inactiveUsers = users.filter(u => !u.isActive).length;
+  const adminUsers = users.filter(u => u.role === 'ADMIN').length;
 
   return (
     <div className="min-h-screen pt-24 pb-12 bg-grid">
@@ -72,7 +87,7 @@ export default function KullaniciYonetimiPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-slate-400 text-sm">Toplam Kullanıcı</p>
-                <p className="text-3xl font-bold text-white mt-2">24</p>
+                <p className="text-3xl font-bold text-white mt-2">{totalUsers}</p>
               </div>
               <div className="w-12 h-12 bg-cyan-500/20 rounded-lg flex items-center justify-center">
                 <svg className="w-6 h-6 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -86,7 +101,7 @@ export default function KullaniciYonetimiPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-slate-400 text-sm">Aktif Kullanıcı</p>
-                <p className="text-3xl font-bold text-white mt-2">18</p>
+                <p className="text-3xl font-bold text-white mt-2">{activeUsers}</p>
               </div>
               <div className="w-12 h-12 bg-green-500/20 rounded-lg flex items-center justify-center">
                 <svg className="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -100,7 +115,7 @@ export default function KullaniciYonetimiPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-slate-400 text-sm">Pasif Kullanıcı</p>
-                <p className="text-3xl font-bold text-white mt-2">6</p>
+                <p className="text-3xl font-bold text-white mt-2">{inactiveUsers}</p>
               </div>
               <div className="w-12 h-12 bg-yellow-500/20 rounded-lg flex items-center justify-center">
                 <svg className="w-6 h-6 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -114,7 +129,7 @@ export default function KullaniciYonetimiPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-slate-400 text-sm">Yöneticiler</p>
-                <p className="text-3xl font-bold text-white mt-2">3</p>
+                <p className="text-3xl font-bold text-white mt-2">{adminUsers}</p>
               </div>
               <div className="w-12 h-12 bg-purple-500/20 rounded-lg flex items-center justify-center">
                 <svg className="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -172,44 +187,63 @@ export default function KullaniciYonetimiPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-700">
-                  <tr className="hover:bg-slate-800/30 transition-colors">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-gradient-to-br from-cyan-400 to-blue-500 rounded-full flex items-center justify-center">
-                          <span className="text-white font-semibold">AD</span>
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium text-white">admin32</p>
-                          <p className="text-xs text-slate-400">admin32</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-300">
-                      admin.com
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-300">
-                      5551234567
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="px-3 py-1 text-xs font-medium bg-purple-500/20 text-purple-400 rounded-full border border-purple-500/30">
-                        ADMIN
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="px-3 py-1 text-xs font-medium bg-green-500/20 text-green-400 rounded-full border border-green-500/30">
-                        Aktif
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
-                      <button className="text-cyan-400 hover:text-cyan-300 mr-3">
-                        Düzenle
-                      </button>
-                      <button className="text-red-400 hover:text-red-300">
-                        Sil
-                      </button>
-                    </td>
-                  </tr>
-                  {/* More rows will be added dynamically */}
+                  {users.length === 0 ? (
+                    <tr>
+                      <td colSpan="6" className="px-6 py-12 text-center text-slate-400">
+                        Henüz kullanıcı bulunmamaktadır.
+                      </td>
+                    </tr>
+                  ) : (
+                    users.map((user) => (
+                      <tr key={user.id} className="hover:bg-slate-800/30 transition-colors">
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-gradient-to-br from-cyan-400 to-blue-500 rounded-full flex items-center justify-center">
+                              <span className="text-white font-semibold text-sm">
+                                {user.name?.charAt(0).toUpperCase() || user.username?.charAt(0).toUpperCase()}
+                              </span>
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium text-white">{user.name} {user.surname}</p>
+                              <p className="text-xs text-slate-400">{user.username}</p>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-300">
+                          {user.email}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-300">
+                          {user.phone}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`px-3 py-1 text-xs font-medium rounded-full border ${
+                            user.role === 'ADMIN'
+                              ? 'bg-purple-500/20 text-purple-400 border-purple-500/30'
+                              : 'bg-blue-500/20 text-blue-400 border-blue-500/30'
+                          }`}>
+                            {user.role}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`px-3 py-1 text-xs font-medium rounded-full border ${
+                            user.isActive
+                              ? 'bg-green-500/20 text-green-400 border-green-500/30'
+                              : 'bg-red-500/20 text-red-400 border-red-500/30'
+                          }`}>
+                            {user.isActive ? 'Aktif' : 'Pasif'}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
+                          <button className="text-cyan-400 hover:text-cyan-300 mr-3 transition-colors">
+                            Düzenle
+                          </button>
+                          <button className="text-red-400 hover:text-red-300 transition-colors">
+                            Sil
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
