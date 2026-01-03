@@ -89,11 +89,16 @@ class UserService {
 
   /**
    * Update user
-   * @param {number} id - User ID
+   * @param {string} username - Username
    * @param {Object} userData - Updated user data
+   * @param {string} userData.name - User name
+   * @param {string} userData.surname - User surname
+   * @param {string} userData.email - Email address
+   * @param {string} userData.phone - Phone number
+   * @param {boolean} userData.isActive - Active status
    * @returns {Promise<Object>} Updated user data
    */
-  async updateUser(id, userData) {
+  async updateUser(username, userData) {
     try {
       const internalApiKey = process.env.NEXT_PUBLIC_INTERNAL_API_KEY;
       
@@ -101,7 +106,9 @@ class UserService {
         throw new Error('Internal API key yapılandırılmamış');
       }
 
-      const response = await fetch(`${API_BASE_URL}/internal/user/${id}`, {
+      console.log('Updating user:', username); // Debug
+
+      const response = await fetch(`${API_BASE_URL}/internal/user/update/${username}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -111,12 +118,71 @@ class UserService {
       });
 
       if (!response.ok) {
-        throw new Error('Kullanıcı güncellenemedi');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Kullanıcı güncellenemedi');
       }
 
-      return await response.json();
+      const data = await response.json();
+      console.log('User updated successfully'); // Debug
+      return data;
     } catch (error) {
       console.error('Update user error:', error);
+      
+      if (error.message === 'Failed to fetch' || error.name === 'TypeError') {
+        throw new Error('Sunucuya bağlanılamadı. İnternet bağlantınızı kontrol edin.');
+      }
+      
+      throw error;
+    }
+  }
+
+  /**
+   * Update user role
+   * @param {string} username - Username
+   * @param {string} role - New role (ADMIN, USER, etc.)
+   * @returns {Promise<Object>} Updated user data or success message
+   */
+  async updateUserRole(username, role) {
+    try {
+      const internalApiKey = process.env.NEXT_PUBLIC_INTERNAL_API_KEY;
+      
+      if (!internalApiKey) {
+        throw new Error('Internal API key yapılandırılmamış');
+      }
+
+      console.log('Updating role for user:', username, 'to:', role); // Debug
+
+      const response = await fetch(`${API_BASE_URL}/internal/update-role/${username}?role=${role}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${internalApiKey}`,
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Rol güncellenemedi');
+      }
+
+      // Check if response has content
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        const data = await response.json();
+        console.log('Role updated successfully with data:', data); // Debug
+        return data;
+      } else {
+        // No content or empty response - return success message
+        console.log('Role updated successfully (no response body)'); // Debug
+        return { success: true, message: 'Rol başarıyla güncellendi' };
+      }
+    } catch (error) {
+      console.error('Update role error:', error);
+      
+      if (error.message === 'Failed to fetch' || error.name === 'TypeError') {
+        throw new Error('Sunucuya bağlanılamadı. İnternet bağlantınızı kontrol edin.');
+      }
+      
       throw error;
     }
   }
