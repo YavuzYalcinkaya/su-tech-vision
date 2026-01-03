@@ -161,56 +161,6 @@ class AuthService {
     }
     return null;
   }
-
-  /**
-   * Get all users (Admin only)
-   * @returns {Promise<Array>} List of all users
-   */
-  async getAllUsers() {
-    try {
-      const internalApiKey = process.env.NEXT_PUBLIC_INTERNAL_API_KEY;
-      
-      if (!internalApiKey) {
-        throw new Error('Internal API key yapılandırılmamış');
-      }
-
-      console.log('Using Internal API Key'); // Debug
-
-      const response = await fetch(`${API_BASE_URL}/internal/userAll`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${internalApiKey}`,
-        },
-      });
-
-      console.log('Response status:', response.status); // Debug
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        
-        if (response.status === 401 || response.status === 403) {
-          throw new Error('Bu işlem için yetkiniz yok');
-        } else if (response.status >= 500) {
-          throw new Error('Sunucu hatası. Lütfen daha sonra tekrar deneyin.');
-        }
-        
-        throw new Error(errorData.message || 'Kullanıcılar yüklenemedi');
-      }
-
-      const data = await response.json();
-      console.log('Users data:', data); // Debug
-      return data;
-    } catch (error) {
-      console.error('Get all users error:', error);
-      
-      if (error.message === 'Failed to fetch' || error.name === 'TypeError') {
-        throw new Error('Sunucuya bağlanılamadı. İnternet bağlantınızı kontrol edin.');
-      }
-      
-      throw error;
-    }
-  }
 }
 
 const authService = new AuthService();

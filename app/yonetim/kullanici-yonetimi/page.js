@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import authService from "../../services/authService";
+import userService from "../../services/userService";
 
 export default function KullaniciYonetimiPage() {
   const router = useRouter();
@@ -30,7 +30,7 @@ export default function KullaniciYonetimiPage() {
         // Fetch users
         try {
           setIsLoading(true);
-          const userData = await authService.getAllUsers();
+          const userData = await userService.getAllUsers();
           setUsers(userData);
           setError("");
         } catch (err) {
