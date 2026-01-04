@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Toast from "../../../components/Toast";
+import aboutService from "../../../services/aboutService";
 
 export default function HakkimizdaYonetimiPage() {
   const router = useRouter();
@@ -9,22 +10,8 @@ export default function HakkimizdaYonetimiPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [toast, setToast] = useState(null);
   const [content, setContent] = useState({
-    title: "Biz Kimiz?",
-    subtitle: "Dijital Dünyanın Öncüleri",
-    description: "SU Tech Vision olarak 2020 yılından beri dijital dönüşüm alanında faaliyet göstermekteyiz. Modern teknolojileri kullanarak işletmelerin dijital dünyada başarılı olmalarını sağlıyoruz.",
-    mission: "Müşterilerimize en iyi teknolojiyi en uygun fiyata sunmak",
-    vision: "Dijital dönüşümde Türkiye'nin lider şirketi olmak",
-    values: [
-      { id: 1, title: "İnovasyon", description: "Sürekli yenilik ve gelişim" },
-      { id: 2, title: "Kalite", description: "Her projede en yüksek standartlar" },
-      { id: 3, title: "Müşteri Odaklılık", description: "Müşteri memnuniyeti önceliğimiz" },
-    ],
-    stats: [
-      { id: 1, number: "500+", label: "Tamamlanan Proje" },
-      { id: 2, number: "300+", label: "Mutlu Müşteri" },
-      { id: 3, number: "50+", label: "Uzman Ekip" },
-      { id: 4, number: "10+", label: "Yıllık Tecrübe" },
-    ],
+    title: "",
+    description: "",
   });
 
   const showToast = (message, type = "success") => {
@@ -50,43 +37,50 @@ export default function HakkimizdaYonetimiPage() {
     };
 
     checkAdmin();
-    setIsLoading(false);
+    loadContent();
   }, [router]);
 
-  const handleSave = () => {
+  const loadContent = async () => {
+    try {
+      const data = await aboutService.getAboutContent();
+      if (data) {
+        setContent({
+          title: data.title || "",
+          description: data.description || "",
+        });
+      }
+    } catch (error) {
+      console.error('Error loading content:', error);
+      // Don't show error toast on initial load if no content exists
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSave = async () => {
+    // Validation
+    if (!content.title.trim()) {
+      showToast("Lütfen başlık girin", "error");
+      return;
+    }
+    if (!content.description.trim()) {
+      showToast("Lütfen açıklama girin", "error");
+      return;
+    }
+
     setIsSaving(true);
-    setTimeout(() => {
+    try {
+      await aboutService.saveAboutContent({
+        title: content.title,
+        description: content.description,
+      });
       showToast("İçerik başarıyla kaydedildi", "success");
+    } catch (error) {
+      console.error('Save error:', error);
+      showToast(error.message || "Kaydetme sırasında bir hata oluştu", "error");
+    } finally {
       setIsSaving(false);
-    }, 500);
-  };
-
-  const handleAddValue = () => {
-    setContent({
-      ...content,
-      values: [...content.values, { id: Date.now(), title: "", description: "" }]
-    });
-  };
-
-  const handleUpdateValue = (id, field, value) => {
-    setContent({
-      ...content,
-      values: content.values.map(v => v.id === id ? { ...v, [field]: value } : v)
-    });
-  };
-
-  const handleDeleteValue = (id) => {
-    setContent({
-      ...content,
-      values: content.values.filter(v => v.id !== id)
-    });
-  };
-
-  const handleUpdateStat = (id, field, value) => {
-    setContent({
-      ...content,
-      stats: content.stats.map(s => s.id === id ? { ...s, [field]: value } : s)
-    });
+    }
   };
 
   if (isLoading) {
@@ -139,130 +133,40 @@ export default function HakkimizdaYonetimiPage() {
         <div className="space-y-6">
           {/* Main Content */}
           <div className="glass rounded-xl p-6 border border-slate-700">
-            <h2 className="text-xl font-bold text-white mb-4">Ana İçerik</h2>
+            <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+              <svg className="w-6 h-6 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              </svg>
+              Hakkımızda İçeriği
+            </h2>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">Başlık</label>
+                <label className="block text-sm font-medium text-slate-300 mb-2">
+                  Başlık <span className="text-red-400">*</span>
+                </label>
                 <input
                   type="text"
                   value={content.title}
                   onChange={(e) => setContent({ ...content, title: e.target.value })}
-                  className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                  placeholder="Örn: Hakkımızda"
+                  className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">Alt Başlık</label>
-                <input
-                  type="text"
-                  value={content.subtitle}
-                  onChange={(e) => setContent({ ...content, subtitle: e.target.value })}
-                  className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">Açıklama</label>
+                <label className="block text-sm font-medium text-slate-300 mb-2">
+                  Açıklama <span className="text-red-400">*</span>
+                </label>
                 <textarea
                   value={content.description}
                   onChange={(e) => setContent({ ...content, description: e.target.value })}
-                  rows={4}
-                  className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 resize-none"
+                  rows={6}
+                  placeholder="Örn: Yeni nesil yazılım çözümleri sunuyoruz."
+                  className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent resize-none transition-all"
                 />
+                <p className="mt-2 text-xs text-slate-400">
+                  Şirketiniz hakkında detaylı bilgi girin
+                </p>
               </div>
-            </div>
-          </div>
-
-          {/* Mission & Vision */}
-          <div className="grid md:grid-cols-2 gap-6">
-            <div className="glass rounded-xl p-6 border border-slate-700">
-              <h2 className="text-xl font-bold text-white mb-4">Misyon</h2>
-              <textarea
-                value={content.mission}
-                onChange={(e) => setContent({ ...content, mission: e.target.value })}
-                rows={3}
-                className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 resize-none"
-              />
-            </div>
-            <div className="glass rounded-xl p-6 border border-slate-700">
-              <h2 className="text-xl font-bold text-white mb-4">Vizyon</h2>
-              <textarea
-                value={content.vision}
-                onChange={(e) => setContent({ ...content, vision: e.target.value })}
-                rows={3}
-                className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 resize-none"
-              />
-            </div>
-          </div>
-
-          {/* Values */}
-          <div className="glass rounded-xl p-6 border border-slate-700">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold text-white">Değerlerimiz</h2>
-              <button
-                onClick={handleAddValue}
-                className="px-4 py-2 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 rounded-lg transition-all flex items-center gap-2"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
-                Yeni Değer
-              </button>
-            </div>
-            <div className="space-y-4">
-              {content.values.map((value) => (
-                <div key={value.id} className="bg-slate-800/50 rounded-xl p-4 border border-slate-700">
-                  <div className="flex gap-4">
-                    <div className="flex-1 space-y-3">
-                      <input
-                        type="text"
-                        value={value.title}
-                        onChange={(e) => handleUpdateValue(value.id, 'title', e.target.value)}
-                        placeholder="Başlık"
-                        className="w-full px-4 py-2 bg-slate-900/50 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
-                      />
-                      <input
-                        type="text"
-                        value={value.description}
-                        onChange={(e) => handleUpdateValue(value.id, 'description', e.target.value)}
-                        placeholder="Açıklama"
-                        className="w-full px-4 py-2 bg-slate-900/50 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
-                      />
-                    </div>
-                    <button
-                      onClick={() => handleDeleteValue(value.id)}
-                      className="p-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg transition-all h-fit"
-                    >
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Stats */}
-          <div className="glass rounded-xl p-6 border border-slate-700">
-            <h2 className="text-xl font-bold text-white mb-4">İstatistikler</h2>
-            <div className="grid md:grid-cols-2 gap-4">
-              {content.stats.map((stat) => (
-                <div key={stat.id} className="bg-slate-800/50 rounded-xl p-4 border border-slate-700">
-                  <input
-                    type="text"
-                    value={stat.number}
-                    onChange={(e) => handleUpdateStat(stat.id, 'number', e.target.value)}
-                    placeholder="Sayı (örn: 500+)"
-                    className="w-full px-4 py-2 mb-2 bg-slate-900/50 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
-                  />
-                  <input
-                    type="text"
-                    value={stat.label}
-                    onChange={(e) => handleUpdateStat(stat.id, 'label', e.target.value)}
-                    placeholder="Etiket"
-                    className="w-full px-4 py-2 bg-slate-900/50 border border-slate-600 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
-                  />
-                </div>
-              ))}
             </div>
           </div>
         </div>
@@ -279,4 +183,5 @@ export default function HakkimizdaYonetimiPage() {
     </div>
   );
 }
+
 
