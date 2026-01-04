@@ -95,6 +95,17 @@ export default function IlanlarYonetimiPage() {
   };
 
   const handleEdit = (job) => {
+    // Format the date for input[type="date"] which expects YYYY-MM-DD
+    const formatDate = (dateString) => {
+      if (!dateString) return "";
+      try {
+        const date = new Date(dateString);
+        return date.toISOString().split('T')[0];
+      } catch {
+        return dateString;
+      }
+    };
+
     setCurrentJob({
       id: job.id,
       title: job.title || "",
@@ -105,7 +116,7 @@ export default function IlanlarYonetimiPage() {
       experienceLevel: job.experienceLevel || "MID",
       minSalary: job.minSalary || "",
       maxSalary: job.maxSalary || "",
-      applicationDeadline: job.applicationDeadline || "",
+      applicationDeadline: formatDate(job.applicationDeadline),
     });
     setIsEditMode(true);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -167,14 +178,18 @@ export default function IlanlarYonetimiPage() {
   };
 
   const handleDelete = (job) => {
+    console.log('handleDelete called with job:', job); // Debug
     setConfirmDialog({
       title: "İlanı Sil",
       message: `"${job.title}" ilanını silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.`,
       onConfirm: async () => {
+        console.log('Delete confirmed for job ID:', job.id); // Debug
         setConfirmDialog(null);
         setIsSaving(true);
         try {
-          await jobService.deleteJob(job.id);
+          console.log('Calling jobService.deleteJob with ID:', job.id); // Debug
+          const result = await jobService.deleteJob(job.id);
+          console.log('Delete result:', result); // Debug
           showToast("İlan başarıyla silindi", "success");
           await loadJobs();
           if (currentJob.id === job.id) {
@@ -187,7 +202,10 @@ export default function IlanlarYonetimiPage() {
           setIsSaving(false);
         }
       },
-      onCancel: () => setConfirmDialog(null),
+      onCancel: () => {
+        console.log('Delete cancelled'); // Debug
+        setConfirmDialog(null);
+      },
     });
   };
 
@@ -231,12 +249,9 @@ export default function IlanlarYonetimiPage() {
                   {isEditMode ? "İlan Düzenle" : "Yeni İlan Oluştur"}
                 </h2>
                 {isEditMode && (
-                  <button
-                    onClick={resetForm}
-                    className="text-slate-400 hover:text-white transition-colors text-sm"
-                  >
-                    İptal
-                  </button>
+                  <span className="px-3 py-1 bg-cyan-500/10 text-cyan-400 text-xs font-medium rounded-full border border-cyan-500/30">
+                    Düzenleniyor
+                  </span>
                 )}
               </div>
 
@@ -371,25 +386,39 @@ export default function IlanlarYonetimiPage() {
                   />
                 </div>
 
-                <button
-                  onClick={handleSave}
-                  disabled={isSaving}
-                  className="w-full btn-primary px-6 py-3 flex items-center justify-center gap-2"
-                >
-                  {isSaving ? (
-                    <>
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                      {isEditMode ? "Güncelleniyor..." : "Kaydediliyor..."}
-                    </>
-                  ) : (
-                    <>
+                <div className="flex gap-3">
+                  {isEditMode && (
+                    <button
+                      onClick={resetForm}
+                      disabled={isSaving}
+                      className="flex-1 px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-xl font-medium transition-all duration-300 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                       </svg>
-                      {isEditMode ? "Güncelle" : "Kaydet"}
-                    </>
+                      İptal
+                    </button>
                   )}
-                </button>
+                  <button
+                    onClick={handleSave}
+                    disabled={isSaving}
+                    className={`${isEditMode ? 'flex-1' : 'w-full'} btn-primary px-6 py-3 flex items-center justify-center gap-2`}
+                  >
+                    {isSaving ? (
+                      <>
+                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                        {isEditMode ? "Güncelleniyor..." : "Kaydediliyor..."}
+                      </>
+                    ) : (
+                      <>
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={isEditMode ? "M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" : "M5 13l4 4L19 7"} />
+                        </svg>
+                        {isEditMode ? "Güncelle" : "Oluştur"}
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -414,30 +443,44 @@ export default function IlanlarYonetimiPage() {
                   {jobs.map((job) => (
                     <div
                       key={job.id}
-                      className={`p-4 rounded-xl border transition-all cursor-pointer ${
+                      className={`p-4 rounded-xl border transition-all ${
                         currentJob.id === job.id
                           ? "bg-cyan-500/10 border-cyan-500/50"
                           : "bg-slate-800/50 border-slate-700 hover:border-slate-600"
                       }`}
                     >
                       <div className="flex items-start justify-between gap-2">
-                        <div className="flex-1 min-w-0" onClick={() => handleEdit(job)}>
+                        <div className="flex-1 min-w-0 cursor-pointer" onClick={() => handleEdit(job)}>
                           <h3 className="font-semibold text-white truncate">{job.title}</h3>
                           <p className="text-sm text-slate-400 truncate">{job.companyName}</p>
                           <p className="text-xs text-slate-500 mt-1">{job.location}</p>
                         </div>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDelete(job);
-                          }}
-                          className="p-2 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-all"
-                          title="Sil"
-                        >
-                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                          </svg>
-                        </button>
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleEdit(job);
+                            }}
+                            className="p-2 text-cyan-400 hover:text-cyan-300 hover:bg-cyan-500/10 rounded-lg transition-all"
+                            title="Düzenle"
+                          >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDelete(job);
+                            }}
+                            className="p-2 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-all"
+                            title="Sil"
+                          >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                          </button>
+                        </div>
                       </div>
                     </div>
                   ))}
