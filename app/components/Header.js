@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import authService from "../services/authService";
 
@@ -17,9 +17,14 @@ const navItems = [
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isAdminMenuOpen, setIsAdminMenuOpen] = useState(false);
+  const [isMenuManagementOpen, setIsMenuManagementOpen] = useState(false);
   const [user, setUser] = useState(null);
   const pathname = usePathname();
   const router = useRouter();
+  
+  // Timeout refs for hover delays
+  const adminMenuTimeout = useRef(null);
+  const menuManagementTimeout = useRef(null);
 
   useEffect(() => {
     // Check if user is logged in
@@ -56,6 +61,34 @@ export default function Header() {
     setUser(null);
     setIsMenuOpen(false);
     router.push('/');
+  };
+
+  // Improved hover handlers with delays
+  const handleAdminMenuEnter = () => {
+    if (adminMenuTimeout.current) {
+      clearTimeout(adminMenuTimeout.current);
+    }
+    setIsAdminMenuOpen(true);
+  };
+
+  const handleAdminMenuLeave = () => {
+    adminMenuTimeout.current = setTimeout(() => {
+      setIsAdminMenuOpen(false);
+      setIsMenuManagementOpen(false);
+    }, 300); // 300ms delay before closing
+  };
+
+  const handleMenuManagementEnter = () => {
+    if (menuManagementTimeout.current) {
+      clearTimeout(menuManagementTimeout.current);
+    }
+    setIsMenuManagementOpen(true);
+  };
+
+  const handleMenuManagementLeave = () => {
+    menuManagementTimeout.current = setTimeout(() => {
+      setIsMenuManagementOpen(false);
+    }, 200); // 200ms delay before closing submenu
   };
 
   return (
@@ -100,8 +133,8 @@ export default function Header() {
             {user && user.role === "ADMIN" && (
               <div 
                 className="relative"
-                onMouseEnter={() => setIsAdminMenuOpen(true)}
-                onMouseLeave={() => setIsAdminMenuOpen(false)}
+                onMouseEnter={handleAdminMenuEnter}
+                onMouseLeave={handleAdminMenuLeave}
               >
                 <button
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 relative group flex items-center gap-2 ${
@@ -154,9 +187,11 @@ export default function Header() {
                 
                 {/* Dropdown */}
                 <div
-                  className={`absolute top-full mt-2 left-0 w-56 bg-slate-900/95 backdrop-blur-xl border border-slate-700 rounded-xl shadow-2xl overflow-hidden transition-all duration-200 ${
+                  className={`absolute top-full mt-2 left-0 w-56 bg-slate-900/95 backdrop-blur-xl border border-slate-700 rounded-xl shadow-2xl transition-all duration-200 ${
                     isAdminMenuOpen ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-2'
                   }`}
+                  onMouseEnter={handleAdminMenuEnter}
+                  onMouseLeave={handleAdminMenuLeave}
                 >
                   <div className="py-2">
                     <Link
@@ -178,6 +213,77 @@ export default function Header() {
                       </svg>
                       Kullanıcı Yönetimi
                     </Link>
+                    
+                    {/* Menu Management with Submenu */}
+                    <div 
+                      className="relative"
+                      onMouseEnter={handleMenuManagementEnter}
+                      onMouseLeave={handleMenuManagementLeave}
+                    >
+                      <div className="flex items-center justify-between px-4 py-3 text-sm text-slate-300 hover:text-white hover:bg-slate-800/50 transition-all cursor-pointer">
+                        <div className="flex items-center gap-3">
+                          <svg
+                            className="w-5 h-5 text-cyan-400"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M4 6h16M4 12h16M4 18h16"
+                            />
+                          </svg>
+                          Menü Yönetimi
+                        </div>
+                        <svg
+                          className={`w-4 h-4 transition-transform duration-200 ${
+                            isMenuManagementOpen ? 'rotate-90' : ''
+                          }`}
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M9 5l7 7-7 7"
+                          />
+                        </svg>
+                      </div>
+                      
+                      {/* Submenu */}
+                      <div
+                        className={`absolute left-full top-0 ml-1 w-52 bg-slate-900/95 backdrop-blur-xl border border-slate-700 rounded-xl shadow-2xl transition-all duration-200 z-50 ${
+                          isMenuManagementOpen ? 'opacity-100 visible translate-x-0' : 'opacity-0 invisible -translate-x-2'
+                        }`}
+                        onMouseEnter={handleMenuManagementEnter}
+                        onMouseLeave={handleMenuManagementLeave}
+                      >
+                        <div className="py-2">
+                          <Link
+                            href="/yonetim/menu-yonetimi/hizmetler"
+                            className="flex items-center gap-3 px-4 py-3 text-sm text-slate-300 hover:text-white hover:bg-slate-800/50 transition-all"
+                          >
+                            <svg className="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            Hizmetler
+                          </Link>
+                          <Link
+                            href="/yonetim/menu-yonetimi/hakkimizda"
+                            className="flex items-center gap-3 px-4 py-3 text-sm text-slate-300 hover:text-white hover:bg-slate-800/50 transition-all"
+                          >
+                            <svg className="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            Hakkımızda
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -297,6 +403,30 @@ export default function Header() {
                   </svg>
                   Kullanıcı Yönetimi
                 </Link>
+                
+                <div className="px-4 py-2 text-xs font-semibold text-slate-500 uppercase tracking-wider mt-2">
+                  Menü Yönetimi
+                </div>
+                <Link
+                  href="/yonetim/menu-yonetimi/hizmetler"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white transition-all duration-300"
+                >
+                  <svg className="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  Hizmetler
+                </Link>
+                <Link
+                  href="/yonetim/menu-yonetimi/hakkimizda"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white transition-all duration-300"
+                >
+                  <svg className="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  Hakkımızda
+                </Link>
               </div>
             )}
             
@@ -343,4 +473,3 @@ export default function Header() {
     </header>
   );
 }
-
