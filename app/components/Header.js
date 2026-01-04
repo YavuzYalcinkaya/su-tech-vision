@@ -6,8 +6,15 @@ import authService from "../services/authService";
 
 const navItems = [
   { name: "Anasayfa", path: "/" },
-  { name: "Hakkımızda", path: "/hakkimizda" },
-  { name: "Kurumsal", path: "/kurumsal" },
+  { 
+    name: "Hakkımızda", 
+    path: "/hakkimizda",
+    hasDropdown: true,
+    subItems: [
+      { name: "Hakkımızda", path: "/hakkimizda" },
+      { name: "Kurumsal", path: "/kurumsal" },
+    ]
+  },
   { name: "Hizmetlerimiz", path: "/hizmetlerimiz" },
   { name: "Referanslar", path: "/referanslar" },
   { name: "İlanlar", path: "/ilanlar" },
@@ -18,6 +25,7 @@ export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isAdminMenuOpen, setIsAdminMenuOpen] = useState(false);
   const [isMenuManagementOpen, setIsMenuManagementOpen] = useState(false);
+  const [isHakkimizdaOpen, setIsHakkimizdaOpen] = useState(false);
   const [user, setUser] = useState(null);
   const pathname = usePathname();
   const router = useRouter();
@@ -25,6 +33,7 @@ export default function Header() {
   // Timeout refs for hover delays
   const adminMenuTimeout = useRef(null);
   const menuManagementTimeout = useRef(null);
+  const hakkimizdaTimeout = useRef(null);
 
   useEffect(() => {
     // Check if user is logged in
@@ -91,6 +100,19 @@ export default function Header() {
     }, 300); // 200ms delay before closing submenu
   };
 
+  const handleHakkimizdaEnter = () => {
+    if (hakkimizdaTimeout.current) {
+      clearTimeout(hakkimizdaTimeout.current);
+    }
+    setIsHakkimizdaOpen(true);
+  };
+
+  const handleHakkimizdaLeave = () => {
+    hakkimizdaTimeout.current = setTimeout(() => {
+      setIsHakkimizdaOpen(false);
+    }, 300);
+  };
+
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-slate-950/80 backdrop-blur-xl border-b border-cyan-500/20">
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -111,22 +133,76 @@ export default function Header() {
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center gap-1">
             {navItems.map((item) => (
-              <Link
-                key={item.path}
-                href={item.path}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 relative group ${
-                  pathname === item.path
-                    ? "text-cyan-400"
-                    : "text-slate-300 hover:text-white"
-                }`}
-              >
-                {item.name}
-                <span
-                  className={`absolute bottom-0 left-1/2 -translate-x-1/2 h-0.5 bg-gradient-to-r from-cyan-400 to-blue-500 transition-all duration-300 ${
-                    pathname === item.path ? "w-full" : "w-0 group-hover:w-full"
+              item.hasDropdown ? (
+                <div
+                  key={item.path}
+                  className="relative group"
+                  onMouseEnter={handleHakkimizdaEnter}
+                  onMouseLeave={handleHakkimizdaLeave}
+                >
+                  <Link
+                    href={item.path}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 relative flex items-center gap-1 ${
+                      pathname === item.path || pathname === '/kurumsal'
+                        ? "text-cyan-400"
+                        : "text-slate-300 hover:text-white"
+                    }`}
+                  >
+                    {item.name}
+                    <svg
+                      className={`w-4 h-4 transition-transform duration-200 ${
+                        isHakkimizdaOpen ? 'rotate-180' : ''
+                      }`}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                    <span
+                      className={`absolute bottom-0 left-1/2 -translate-x-1/2 h-0.5 bg-gradient-to-r from-cyan-400 to-blue-500 transition-all duration-300 ${
+                        pathname === item.path || pathname === '/kurumsal' ? "w-full" : "w-0 group-hover:w-full"
+                      }`}
+                    />
+                  </Link>
+                  
+                  {/* Dropdown */}
+                  {isHakkimizdaOpen && (
+                    <div className="absolute top-full left-0 mt-2 w-48 glass rounded-xl border border-slate-700 shadow-xl overflow-hidden z-50">
+                      {item.subItems.map((subItem) => (
+                        <Link
+                          key={subItem.path}
+                          href={subItem.path}
+                          className={`block px-4 py-3 text-sm transition-all ${
+                            pathname === subItem.path
+                              ? "text-cyan-400 bg-cyan-500/10"
+                              : "text-slate-300 hover:text-white hover:bg-slate-800/50"
+                          }`}
+                        >
+                          {subItem.name}
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <Link
+                  key={item.path}
+                  href={item.path}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 relative group ${
+                    pathname === item.path
+                      ? "text-cyan-400"
+                      : "text-slate-300 hover:text-white"
                   }`}
-                />
-              </Link>
+                >
+                  {item.name}
+                  <span
+                    className={`absolute bottom-0 left-1/2 -translate-x-1/2 h-0.5 bg-gradient-to-r from-cyan-400 to-blue-500 transition-all duration-300 ${
+                      pathname === item.path ? "w-full" : "w-0 group-hover:w-full"
+                    }`}
+                  />
+                </Link>
+              )
             ))}
             
             {/* Admin Dropdown Menu */}
@@ -319,7 +395,7 @@ export default function Header() {
                 </div>
                 <button
                   onClick={handleSignOut}
-                  className="px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg text-sm font-medium transition-all duration-300 border border-red-500/30 hover:border-red-500/50"
+                  className="px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg text-sm font-medium transition-all duration-300 border border-red-500/30 hover:border-red-500/50 whitespace-nowrap"
                 >
                   Çıkış Yap
                 </button>
@@ -372,18 +448,61 @@ export default function Header() {
         >
           <div className="flex flex-col gap-1 pt-2">
             {navItems.map((item) => (
-              <Link
-                key={item.path}
-                href={item.path}
-                onClick={() => setIsMenuOpen(false)}
-                className={`px-4 py-3 rounded-lg text-sm font-medium transition-all duration-300 ${
-                  pathname === item.path
-                    ? "bg-cyan-500/10 text-cyan-400 border-l-2 border-cyan-400"
-                    : "text-slate-300 hover:bg-slate-800 hover:text-white"
-                }`}
-              >
-                {item.name}
-              </Link>
+              item.hasDropdown ? (
+                <div key={item.path}>
+                  <button
+                    onClick={() => setIsHakkimizdaOpen(!isHakkimizdaOpen)}
+                    className={`w-full flex items-center justify-between px-4 py-3 rounded-lg text-sm font-medium transition-all duration-300 ${
+                      pathname === item.path || pathname === '/kurumsal'
+                        ? "bg-cyan-500/10 text-cyan-400 border-l-2 border-cyan-400"
+                        : "text-slate-300 hover:bg-slate-800 hover:text-white"
+                    }`}
+                  >
+                    <span>{item.name}</span>
+                    <svg
+                      className={`w-4 h-4 transition-transform duration-200 ${
+                        isHakkimizdaOpen ? 'rotate-180' : ''
+                      }`}
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+                  {isHakkimizdaOpen && (
+                    <div className="ml-4 mt-1 space-y-1">
+                      {item.subItems.map((subItem) => (
+                        <Link
+                          key={subItem.path}
+                          href={subItem.path}
+                          onClick={() => setIsMenuOpen(false)}
+                          className={`block px-4 py-2 rounded-lg text-sm transition-all duration-300 ${
+                            pathname === subItem.path
+                              ? "bg-cyan-500/10 text-cyan-400"
+                              : "text-slate-400 hover:bg-slate-800 hover:text-white"
+                          }`}
+                        >
+                          {subItem.name}
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <Link
+                  key={item.path}
+                  href={item.path}
+                  onClick={() => setIsMenuOpen(false)}
+                  className={`px-4 py-3 rounded-lg text-sm font-medium transition-all duration-300 ${
+                    pathname === item.path
+                      ? "bg-cyan-500/10 text-cyan-400 border-l-2 border-cyan-400"
+                      : "text-slate-300 hover:bg-slate-800 hover:text-white"
+                  }`}
+                >
+                  {item.name}
+                </Link>
+              )
             ))}
             
             {/* Mobile Admin Menu */}
@@ -471,7 +590,7 @@ export default function Header() {
                   </div>
                   <button
                     onClick={handleSignOut}
-                    className="w-full px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg text-sm font-medium transition-all duration-300 border border-red-500/30"
+                    className="w-full px-4 py-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg text-sm font-medium transition-all duration-300 border border-red-500/30 whitespace-nowrap"
                   >
                     Çıkış Yap
                   </button>
