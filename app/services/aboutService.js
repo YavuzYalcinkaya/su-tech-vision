@@ -76,10 +76,17 @@ class AboutService {
    */
   async getAboutContent() {
     try {
+      const internalApiKey = process.env.NEXT_PUBLIC_INTERNAL_API_KEY;
+      
+      if (!internalApiKey) {
+        throw new Error('Internal API key yapılandırılmamış');
+      }
+
       const response = await fetch(`${API_BASE_URL}/about`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${internalApiKey}`,
         },
       });
 
@@ -96,6 +103,48 @@ class AboutService {
       return data;
     } catch (error) {
       console.error('Get about content error:', error);
+      
+      if (error.message === 'Failed to fetch' || error.name === 'TypeError') {
+        throw new Error('Sunucuya bağlanılamadı. İnternet bağlantınızı kontrol edin.');
+      }
+      
+      throw error;
+    }
+  }
+
+  /**
+   * Get About Us content from internal API (ID 3)
+   * @returns {Promise<Object>} About content data
+   */
+  async getAboutContentById() {
+    try {
+      const internalApiKey = process.env.NEXT_PUBLIC_INTERNAL_API_KEY;
+      
+      if (!internalApiKey) {
+        throw new Error('Internal API key yapılandırılmamış');
+      }
+
+      const response = await fetch(`${API_BASE_URL}/internal/about/3`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${internalApiKey}`,
+        },
+      });
+
+      if (!response.ok) {
+        if (response.status === 404) {
+          // No content yet, return default
+          return null;
+        }
+        throw new Error('İçerik yüklenemedi');
+      }
+
+      const data = await response.json();
+      console.log('About content loaded by ID:', data); // Debug
+      return data;
+    } catch (error) {
+      console.error('Get about content by ID error:', error);
       
       if (error.message === 'Failed to fetch' || error.name === 'TypeError') {
         throw new Error('Sunucuya bağlanılamadı. İnternet bağlantınızı kontrol edin.');
@@ -196,6 +245,12 @@ class AboutService {
       });
 
       console.log('Response status:', response.status); // Debug
+
+      // 204 No Content is a success status for DELETE
+      if (response.status === 204) {
+        console.log('About content deleted successfully (204 No Content)'); // Debug
+        return { success: true, message: 'İçerik başarıyla silindi' };
+      }
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));

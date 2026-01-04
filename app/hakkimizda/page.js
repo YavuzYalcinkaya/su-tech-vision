@@ -1,4 +1,35 @@
+"use client";
+import { useState, useEffect } from "react";
+import aboutService from "../services/aboutService";
+
 export default function Hakkimizda() {
+  const [content, setContent] = useState({
+    title: "Biz Kimiz?",
+    description: "Teknoloji tutkumuz ve yenilikçi vizyonumuzla işletmelerin dijital dönüşümüne öncülük ediyoruz."
+  });
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    loadContent();
+  }, []);
+
+  const loadContent = async () => {
+    try {
+      const data = await aboutService.getAboutContentById();
+      if (data && (data.title || data.description)) {
+        setContent({
+          title: data.title || "Biz Kimiz?",
+          description: data.description || "Teknoloji tutkumuz ve yenilikçi vizyonumuzla işletmelerin dijital dönüşümüne öncülük ediyoruz."
+        });
+      }
+    } catch (error) {
+      console.error('Error loading about content:', error);
+      // Use default content if error occurs
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <>
       {/* Hero Section */}
@@ -12,12 +43,26 @@ export default function Hakkimizda() {
             <span className="inline-block px-4 py-2 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-sm font-medium mb-6">
               Hakkımızda
             </span>
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6">
-              Biz <span className="gradient-text">Kimiz?</span>
-            </h1>
-            <p className="text-xl text-slate-400">
-              Teknoloji tutkumuz ve yenilikçi vizyonumuzla işletmelerin dijital dönüşümüne öncülük ediyoruz.
-            </p>
+            {isLoading ? (
+              <div className="flex justify-center items-center py-12">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-400"></div>
+              </div>
+            ) : (
+              <>
+                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6">
+                  {content.title.includes("Kimiz") ? (
+                    <>
+                      Biz <span className="gradient-text">Kimiz?</span>
+                    </>
+                  ) : (
+                    <span className="gradient-text">{content.title}</span>
+                  )}
+                </h1>
+                <p className="text-xl text-slate-400">
+                  {content.description}
+                </p>
+              </>
+            )}
           </div>
         </div>
       </section>

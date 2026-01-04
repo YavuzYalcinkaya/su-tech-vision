@@ -46,7 +46,7 @@ export default function HakkimizdaYonetimiPage() {
 
   const loadContent = async () => {
     try {
-      const data = await aboutService.getAboutContent();
+      const data = await aboutService.getAboutContentById();
       console.log('Loaded content:', data); // Debug
       if (data && (data.title || data.description)) {
         // If we have any content, set edit mode
