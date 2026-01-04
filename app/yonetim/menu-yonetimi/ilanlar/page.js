@@ -64,6 +64,7 @@ export default function IlanlarYonetimiPage() {
 
     checkAdmin();
     loadJobs();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router]);
 
   const loadJobs = async () => {
@@ -503,8 +504,11 @@ export default function IlanlarYonetimiPage() {
       {/* Confirm Dialog */}
       {confirmDialog && (
         <ConfirmDialog
+          isOpen={true}
           title={confirmDialog.title}
           message={confirmDialog.message}
+          confirmText="Sil"
+          confirmColor="red"
           onConfirm={confirmDialog.onConfirm}
           onCancel={confirmDialog.onCancel}
         />

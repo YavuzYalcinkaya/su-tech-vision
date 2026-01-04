@@ -270,8 +270,11 @@ export default function HakkimizdaYonetimiPage() {
       {/* Confirm Dialog */}
       {confirmDialog && (
         <ConfirmDialog
+          isOpen={true}
           title={confirmDialog.title}
           message={confirmDialog.message}
+          confirmText="Sil"
+          confirmColor="red"
           onConfirm={confirmDialog.onConfirm}
           onCancel={confirmDialog.onCancel}
         />
