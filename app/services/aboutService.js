@@ -23,7 +23,7 @@ class AboutService {
       console.log('Saving about content:', data); // Debug
 
       // Always use ID 3 for about content
-      const response = await fetch(`${API_BASE_URL}/internal/about/3`, {
+      const response = await fetch(`${API_BASE_URL}/internal/about`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -82,7 +82,7 @@ class AboutService {
         throw new Error('Internal API key yapılandırılmamış');
       }
 
-      const response = await fetch(`${API_BASE_URL}/about`, {
+      const response = await fetch(`${API_BASE_URL}/internal/about`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -113,56 +113,13 @@ class AboutService {
   }
 
   /**
-   * Get About Us content from internal API (ID 3)
-   * @returns {Promise<Object>} About content data
-   */
-  async getAboutContentById() {
-    try {
-      const internalApiKey = process.env.NEXT_PUBLIC_INTERNAL_API_KEY;
-      
-      if (!internalApiKey) {
-        throw new Error('Internal API key yapılandırılmamış');
-      }
-
-      const response = await fetch(`${API_BASE_URL}/internal/about/3`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${internalApiKey}`,
-        },
-      });
-
-      if (!response.ok) {
-        if (response.status === 404) {
-          // No content yet, return default
-          return null;
-        }
-        throw new Error('İçerik yüklenemedi');
-      }
-
-      const data = await response.json();
-      console.log('About content loaded by ID:', data); // Debug
-      return data;
-    } catch (error) {
-      console.error('Get about content by ID error:', error);
-      
-      if (error.message === 'Failed to fetch' || error.name === 'TypeError') {
-        throw new Error('Sunucuya bağlanılamadı. İnternet bağlantınızı kontrol edin.');
-      }
-      
-      throw error;
-    }
-  }
-
-  /**
    * Update About Us content
-   * @param {number} id - Content ID
    * @param {Object} data - About content data
    * @param {string} data.title - Title
    * @param {string} data.description - Description
    * @returns {Promise<Object>} Response data
    */
-  async updateAboutContent(id, data) {
+  async updateAboutContent(data) {
     try {
       const internalApiKey = process.env.NEXT_PUBLIC_INTERNAL_API_KEY;
       
@@ -170,10 +127,10 @@ class AboutService {
         throw new Error('Internal API key yapılandırılmamış');
       }
 
-      console.log('Updating about content:', id, data); // Debug
+      console.log('Updating about content:', data); // Debug
 
-      const response = await fetch(`${API_BASE_URL}/internal/about/${id}`, {
-        method: 'PUT',
+      const response = await fetch(`${API_BASE_URL}/internal/about`, {
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${internalApiKey}`,
@@ -223,10 +180,9 @@ class AboutService {
 
   /**
    * Delete About Us content
-   * @param {number} id - Content ID
    * @returns {Promise<Object>} Response data
    */
-  async deleteAboutContent(id) {
+  async deleteAboutContent() {
     try {
       const internalApiKey = process.env.NEXT_PUBLIC_INTERNAL_API_KEY;
       
@@ -234,9 +190,9 @@ class AboutService {
         throw new Error('Internal API key yapılandırılmamış');
       }
 
-      console.log('Deleting about content:', id); // Debug
+      console.log('Deleting about content'); // Debug
 
-      const response = await fetch(`${API_BASE_URL}/internal/about/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/internal/about`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',

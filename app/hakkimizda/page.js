@@ -15,7 +15,7 @@ export default function Hakkimizda() {
 
   const loadContent = async () => {
     try {
-      const data = await aboutService.getAboutContentById();
+      const data = await aboutService.getAboutContent();
       if (data && (data.title || data.description)) {
         setContent({
           title: data.title || "Biz Kimiz?",

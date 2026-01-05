@@ -12,7 +12,6 @@ export default function HakkimizdaYonetimiPage() {
   const [toast, setToast] = useState(null);
   const [confirmDialog, setConfirmDialog] = useState(null);
   const [content, setContent] = useState({
-    id: null,
     title: "",
     description: "",
   });
@@ -46,12 +45,11 @@ export default function HakkimizdaYonetimiPage() {
 
   const loadContent = async () => {
     try {
-      const data = await aboutService.getAboutContentById();
+      const data = await aboutService.getAboutContent();
       console.log('Loaded content:', data); // Debug
       if (data && (data.title || data.description)) {
         // If we have any content, set edit mode
         setContent({
-          id: 3, // Always use ID 3 as per backend requirement
           title: data.title || "",
           description: data.description || "",
         });
@@ -60,7 +58,6 @@ export default function HakkimizdaYonetimiPage() {
       } else {
         // No content, create mode
         setContent({
-          id: null,
           title: "",
           description: "",
         });
@@ -95,15 +92,13 @@ export default function HakkimizdaYonetimiPage() {
       };
 
       if (isEditMode) {
-        // Update existing content (always use ID 3)
-        await aboutService.updateAboutContent(3, data);
+        await aboutService.updateAboutContent(data);
         showToast("İçerik başarıyla güncellendi", "success");
       } else {
         // Create new content
         await aboutService.saveAboutContent(data);
         showToast("İçerik başarıyla kaydedildi", "success");
-        // Set edit mode and ID after creation
-        setContent({ ...content, id: 3 });
+        setContent({ ...content });
         setIsEditMode(true);
       }
     } catch (error) {
@@ -127,11 +122,10 @@ export default function HakkimizdaYonetimiPage() {
         setConfirmDialog(null);
         setIsSaving(true);
         try {
-          await aboutService.deleteAboutContent(3); // Always use ID 3
+          await aboutService.deleteAboutContent(); 
           showToast("İçerik başarıyla silindi", "success");
           // Reset form
           setContent({
-            id: null,
             title: "",
             description: "",
           });
