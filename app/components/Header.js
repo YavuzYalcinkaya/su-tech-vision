@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import authService from "../services/authService";
+import serviceMenuService from "../services/serviceMenuService";
 
 const navItems = [
   { name: "Anasayfa", path: "/" },
@@ -15,7 +16,7 @@ const navItems = [
       { name: "Kurumsal", path: "/kurumsal" },
     ]
   },
-  { name: "Hizmetlerimiz", path: "/hizmetlerimiz" },
+  { name: "Hizmetlerimiz", path: "/hizmetlerimiz", isServices: true },
   { name: "Referanslar", path: "/referanslar" },
   { name: "İlanlar", path: "/ilanlar" },
   { name: "İletişim", path: "/iletisim" },
@@ -26,6 +27,9 @@ export default function Header() {
   const [isAdminMenuOpen, setIsAdminMenuOpen] = useState(false);
   const [isMenuManagementOpen, setIsMenuManagementOpen] = useState(false);
   const [isHakkimizdaOpen, setIsHakkimizdaOpen] = useState(false);
+  const [isServicesOpen, setIsServicesOpen] = useState(false);
+  const [activeServiceMenu, setActiveServiceMenu] = useState(null);
+  const [serviceMenus, setServiceMenus] = useState([]);
   const [user, setUser] = useState(null);
   const pathname = usePathname();
   const router = useRouter();
@@ -34,6 +38,8 @@ export default function Header() {
   const adminMenuTimeout = useRef(null);
   const menuManagementTimeout = useRef(null);
   const hakkimizdaTimeout = useRef(null);
+  const servicesTimeout = useRef(null);
+  const serviceSubmenuTimeout = useRef(null);
 
   useEffect(() => {
     // Check if user is logged in
@@ -62,6 +68,22 @@ export default function Header() {
       window.removeEventListener('storage', checkUser);
       window.removeEventListener('userLogin', checkUser);
     };
+  }, []);
+
+  // Fetch service menus
+  useEffect(() => {
+    const fetchServiceMenus = async () => {
+      try {
+        const data = await serviceMenuService.getServiceMenusWithPages();
+        // Filter only active menus
+        const activeMenus = data.filter(menu => menu.active);
+        setServiceMenus(activeMenus);
+      } catch (error) {
+        console.error('Failed to fetch service menus:', error);
+      }
+    };
+
+    fetchServiceMenus();
   }, []);
 
   const handleSignOut = () => {
@@ -111,6 +133,34 @@ export default function Header() {
     hakkimizdaTimeout.current = setTimeout(() => {
       setIsHakkimizdaOpen(false);
     }, 300);
+  };
+
+  // Services menu hover handlers
+  const handleServicesEnter = () => {
+    if (servicesTimeout.current) {
+      clearTimeout(servicesTimeout.current);
+    }
+    setIsServicesOpen(true);
+  };
+
+  const handleServicesLeave = () => {
+    servicesTimeout.current = setTimeout(() => {
+      setIsServicesOpen(false);
+      setActiveServiceMenu(null);
+    }, 300);
+  };
+
+  const handleServiceItemEnter = (menuId) => {
+    if (serviceSubmenuTimeout.current) {
+      clearTimeout(serviceSubmenuTimeout.current);
+    }
+    setActiveServiceMenu(menuId);
+  };
+
+  const handleServiceItemLeave = () => {
+    serviceSubmenuTimeout.current = setTimeout(() => {
+      setActiveServiceMenu(null);
+    }, 200);
   };
 
   return (
@@ -182,6 +232,101 @@ export default function Header() {
                           {subItem.name}
                         </Link>
                       ))}
+                    </div>
+                  )}
+                </div>
+              ) : item.isServices ? (
+                // Services Menu with Dynamic Dropdown
+                <div
+                  key={item.path}
+                  className="relative group"
+                  onMouseEnter={handleServicesEnter}
+                  onMouseLeave={handleServicesLeave}
+                >
+                  <Link
+                    href={item.path}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 relative flex items-center gap-1 ${
+                      pathname.startsWith('/hizmetlerimiz')
+                        ? "text-cyan-400"
+                        : "text-slate-300 hover:text-white"
+                    }`}
+                  >
+                    {item.name}
+                    {serviceMenus.length > 0 && (
+                      <svg
+                        className={`w-4 h-4 transition-transform duration-200 ${
+                          isServicesOpen ? 'rotate-180' : ''
+                        }`}
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    )}
+                    <span
+                      className={`absolute bottom-0 left-1/2 -translate-x-1/2 h-0.5 bg-gradient-to-r from-cyan-400 to-blue-500 transition-all duration-300 ${
+                        pathname.startsWith('/hizmetlerimiz') ? "w-full" : "w-0 group-hover:w-full"
+                      }`}
+                    />
+                  </Link>
+                  
+                  {/* Services Dropdown */}
+                  {isServicesOpen && serviceMenus.length > 0 && (
+                    <div className="absolute top-full left-0 mt-2 w-56 bg-slate-900/95 backdrop-blur-xl rounded-xl border border-slate-700 shadow-2xl overflow-visible z-50">
+                      <div className="py-2">
+                        {serviceMenus.map((menu) => (
+                          <div
+                            key={menu.id}
+                            className="relative"
+                            onMouseEnter={() => handleServiceItemEnter(menu.id)}
+                            onMouseLeave={handleServiceItemLeave}
+                          >
+                            <div
+                              className={`flex items-center justify-between px-4 py-3 text-sm transition-all cursor-pointer ${
+                                activeServiceMenu === menu.id
+                                  ? "text-cyan-400 bg-cyan-500/10"
+                                  : "text-slate-300 hover:text-white hover:bg-slate-800/50"
+                              }`}
+                            >
+                              <span>{menu.title}</span>
+                              {menu.pages && menu.pages.length > 0 && (
+                                <svg
+                                  className={`w-4 h-4 transition-transform duration-200 ${
+                                    activeServiceMenu === menu.id ? 'rotate-90' : ''
+                                  }`}
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                </svg>
+                              )}
+                            </div>
+                            
+                            {/* Pages Submenu */}
+                            {activeServiceMenu === menu.id && menu.pages && menu.pages.length > 0 && (
+                              <div 
+                                className="absolute left-full top-0 ml-1 w-52 bg-slate-900/95 backdrop-blur-xl border border-slate-700 rounded-xl shadow-2xl z-50"
+                                onMouseEnter={() => handleServiceItemEnter(menu.id)}
+                                onMouseLeave={handleServiceItemLeave}
+                              >
+                                <div className="py-2">
+                                  {menu.pages.filter(page => page.active).map((page) => (
+                                    <Link
+                                      key={page.id}
+                                      href={`/hizmetlerimiz/${menu.id}/${page.id}`}
+                                      className="block px-4 py-3 text-sm text-slate-300 hover:text-white hover:bg-slate-800/50 transition-all"
+                                    >
+                                      {page.title}
+                                    </Link>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   )}
                 </div>
@@ -443,7 +588,7 @@ export default function Header() {
         {/* Mobile Navigation */}
         <div
           className={`lg:hidden overflow-hidden transition-all duration-300 ${
-            isMenuOpen ? "max-h-[600px] pb-4" : "max-h-0"
+            isMenuOpen ? "max-h-[800px] pb-4" : "max-h-0"
           }`}
         >
           <div className="flex flex-col gap-1 pt-2">
@@ -485,6 +630,76 @@ export default function Header() {
                         >
                           {subItem.name}
                         </Link>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ) : item.isServices ? (
+                // Mobile Services Menu
+                <div key={item.path}>
+                  <button
+                    onClick={() => setIsServicesOpen(!isServicesOpen)}
+                    className={`w-full flex items-center justify-between px-4 py-3 rounded-lg text-sm font-medium transition-all duration-300 ${
+                      pathname.startsWith('/hizmetlerimiz')
+                        ? "bg-cyan-500/10 text-cyan-400 border-l-2 border-cyan-400"
+                        : "text-slate-300 hover:bg-slate-800 hover:text-white"
+                    }`}
+                  >
+                    <span>{item.name}</span>
+                    {serviceMenus.length > 0 && (
+                      <svg
+                        className={`w-4 h-4 transition-transform duration-200 ${
+                          isServicesOpen ? 'rotate-180' : ''
+                        }`}
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    )}
+                  </button>
+                  {isServicesOpen && serviceMenus.length > 0 && (
+                    <div className="ml-4 mt-1 space-y-1">
+                      {serviceMenus.map((menu) => (
+                        <div key={menu.id}>
+                          <button
+                            onClick={() => setActiveServiceMenu(activeServiceMenu === menu.id ? null : menu.id)}
+                            className={`w-full flex items-center justify-between px-4 py-2 rounded-lg text-sm transition-all duration-300 ${
+                              activeServiceMenu === menu.id
+                                ? "bg-cyan-500/10 text-cyan-400"
+                                : "text-slate-400 hover:bg-slate-800 hover:text-white"
+                            }`}
+                          >
+                            <span>{menu.title}</span>
+                            {menu.pages && menu.pages.length > 0 && (
+                              <svg
+                                className={`w-4 h-4 transition-transform duration-200 ${
+                                  activeServiceMenu === menu.id ? 'rotate-180' : ''
+                                }`}
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                              </svg>
+                            )}
+                          </button>
+                          {activeServiceMenu === menu.id && menu.pages && menu.pages.length > 0 && (
+                            <div className="ml-4 mt-1 space-y-1">
+                              {menu.pages.filter(page => page.active).map((page) => (
+                                <Link
+                                  key={page.id}
+                                  href={`/hizmetlerimiz/${menu.id}/${page.id}`}
+                                  onClick={() => setIsMenuOpen(false)}
+                                  className="block px-4 py-2 rounded-lg text-sm text-slate-400 hover:bg-slate-800 hover:text-white transition-all duration-300"
+                                >
+                                  {page.title}
+                                </Link>
+                              ))}
+                            </div>
+                          )}
+                        </div>
                       ))}
                     </div>
                   )}
