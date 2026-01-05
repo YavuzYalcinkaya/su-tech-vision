@@ -2,29 +2,13 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Toast from "../../../components/Toast";
+import serviceMenuService from "../../../services/serviceMenuService";
 
 export default function HizmetlerYonetimiPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
-  const [services, setServices] = useState([
-    {
-      id: 1,
-      title: "Web Tasarım",
-      description: "Modern ve responsive web siteleri tasarlıyoruz.",
-      icon: "🎨",
-      isActive: true,
-    },
-    {
-      id: 2,
-      title: "Mobil Uygulama",
-      description: "iOS ve Android için mobil uygulamalar geliştiriyoruz.",
-      icon: "📱",
-      isActive: true,
-    },
-  ]);
-  const [editingService, setEditingService] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
+  const [services, setServices] = useState([]);
+  const [expandedMenus, setExpandedMenus] = useState({});
   const [toast, setToast] = useState(null);
 
   const showToast = (message, type = "success") => {
@@ -39,71 +23,50 @@ export default function HizmetlerYonetimiPage() {
         
         if (!token) {
           router.push('/giris');
-          return;
+          return false;
         }
         
         if (role !== 'ADMIN') {
           router.push('/');
-          return;
+          return false;
         }
+        return true;
       }
+      return false;
     };
 
-    checkAdmin();
-    setIsLoading(false);
+    if (checkAdmin()) {
+      fetchServices();
+    }
   }, [router]);
 
-  const handleEdit = (service) => {
-    setEditingService({ ...service });
-    setIsModalOpen(true);
-  };
-
-  const handleAdd = () => {
-    setEditingService({
-      id: Date.now(),
-      title: "",
-      description: "",
-      icon: "⭐",
-      isActive: true,
-    });
-    setIsModalOpen(true);
-  };
-
-  const handleSave = () => {
-    if (!editingService.title || !editingService.description) {
-      showToast("Lütfen tüm alanları doldurun", "error");
-      return;
+  const fetchServices = async () => {
+    try {
+      setIsLoading(true);
+      const data = await serviceMenuService.getServiceMenusWithPages();
+      setServices(data);
+    } catch (error) {
+      console.error('Failed to fetch services:', error);
+      showToast(error.message || 'Hizmetler yüklenirken bir hata oluştu', 'error');
+    } finally {
+      setIsLoading(false);
     }
-
-    setIsSaving(true);
-    setTimeout(() => {
-      const existingIndex = services.findIndex(s => s.id === editingService.id);
-      if (existingIndex >= 0) {
-        const updated = [...services];
-        updated[existingIndex] = editingService;
-        setServices(updated);
-        showToast("Hizmet başarıyla güncellendi", "success");
-      } else {
-        setServices([...services, editingService]);
-        showToast("Hizmet başarıyla eklendi", "success");
-      }
-      setIsModalOpen(false);
-      setEditingService(null);
-      setIsSaving(false);
-    }, 500);
   };
 
-  const handleDelete = (id) => {
-    if (confirm("Bu hizmeti silmek istediğinize emin misiniz?")) {
-      setServices(services.filter(s => s.id !== id));
-      showToast("Hizmet silindi", "success");
-    }
+  const toggleMenu = (menuId) => {
+    setExpandedMenus(prev => ({
+      ...prev,
+      [menuId]: !prev[menuId]
+    }));
   };
 
   if (isLoading) {
     return (
       <div className="min-h-screen pt-24 pb-12 bg-grid flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-400"></div>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-400 mx-auto mb-4"></div>
+          <p className="text-slate-400">Hizmetler yükleniyor...</p>
+        </div>
       </div>
     );
   }
@@ -123,158 +86,194 @@ export default function HizmetlerYonetimiPage() {
             </div>
             <div>
               <h1 className="text-3xl font-bold text-white">Hizmetler Yönetimi</h1>
-              <p className="text-slate-400 mt-1">Hizmetlerimiz sayfasının içeriğini yönetin</p>
+              <p className="text-slate-400 mt-1">Hizmetlerimiz sayfasının içeriğini görüntüleyin</p>
             </div>
           </div>
           <button
-            onClick={handleAdd}
-            className="btn-primary px-6 py-3 flex items-center gap-2"
+            onClick={fetchServices}
+            className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-xl transition-colors flex items-center gap-2"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
             </svg>
-            Yeni Hizmet
+            Yenile
           </button>
         </div>
 
-        {/* Services Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {services.map((service) => (
-            <div
-              key={service.id}
-              className="glass rounded-xl p-6 border border-slate-700 hover:border-cyan-500/50 transition-all"
-            >
-              <div className="text-4xl mb-4">{service.icon}</div>
-              <h3 className="text-xl font-bold text-white mb-2">{service.title}</h3>
-              <p className="text-slate-400 text-sm mb-4 line-clamp-2">{service.description}</p>
-              
-              <div className="flex items-center justify-between pt-4 border-t border-slate-700">
-                <span className={`px-3 py-1 text-xs font-medium rounded-full ${
-                  service.isActive 
-                    ? 'bg-green-500/20 text-green-400 border border-green-500/30'
-                    : 'bg-red-500/20 text-red-400 border border-red-500/30'
-                }`}>
-                  {service.isActive ? 'Aktif' : 'Pasif'}
-                </span>
-                
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => handleEdit(service)}
-                    className="p-2 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 rounded-lg transition-all"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                    </svg>
-                  </button>
-                  <button
-                    onClick={() => handleDelete(service.id)}
-                    className="p-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg transition-all"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                  </button>
-                </div>
+        {/* Stats */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+          <div className="glass rounded-xl p-4 border border-slate-700">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-cyan-500/20 rounded-lg flex items-center justify-center">
+                <svg className="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+                </svg>
               </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Edit Modal */}
-        {isModalOpen && editingService && (
-          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className="glass rounded-2xl max-w-2xl w-full border border-slate-700">
-              <div className="p-6 border-b border-slate-700">
-                <h2 className="text-2xl font-bold text-white">
-                  {services.find(s => s.id === editingService.id) ? 'Hizmeti Düzenle' : 'Yeni Hizmet Ekle'}
-                </h2>
-              </div>
-
-              <div className="p-6 space-y-6">
-                {/* Icon Emoji Picker */}
-                <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">
-                    İkon (Emoji)
-                  </label>
-                  <input
-                    type="text"
-                    value={editingService.icon}
-                    onChange={(e) => setEditingService({ ...editingService, icon: e.target.value })}
-                    className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-white text-2xl text-center focus:outline-none focus:ring-2 focus:ring-cyan-500"
-                    placeholder="🎨"
-                    maxLength={2}
-                  />
-                </div>
-
-                {/* Title */}
-                <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">
-                    Başlık
-                  </label>
-                  <input
-                    type="text"
-                    value={editingService.title}
-                    onChange={(e) => setEditingService({ ...editingService, title: e.target.value })}
-                    className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
-                    placeholder="Hizmet başlığı"
-                  />
-                </div>
-
-                {/* Description */}
-                <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">
-                    Açıklama
-                  </label>
-                  <textarea
-                    value={editingService.description}
-                    onChange={(e) => setEditingService({ ...editingService, description: e.target.value })}
-                    rows={4}
-                    className="w-full px-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-cyan-500 resize-none"
-                    placeholder="Hizmet açıklaması"
-                  />
-                </div>
-
-                {/* Active Status */}
-                <div className="flex items-center gap-3">
-                  <input
-                    type="checkbox"
-                    id="isActive"
-                    checked={editingService.isActive}
-                    onChange={(e) => setEditingService({ ...editingService, isActive: e.target.checked })}
-                    className="w-5 h-5 rounded border-slate-700 bg-slate-800 text-cyan-500 focus:ring-2 focus:ring-cyan-500"
-                  />
-                  <label htmlFor="isActive" className="text-sm font-medium text-slate-300">
-                    Aktif Hizmet
-                  </label>
-                </div>
-              </div>
-
-              <div className="p-6 border-t border-slate-700 flex gap-3 justify-end">
-                <button
-                  onClick={() => setIsModalOpen(false)}
-                  disabled={isSaving}
-                  className="px-6 py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-xl transition-colors"
-                >
-                  İptal
-                </button>
-                <button
-                  onClick={handleSave}
-                  disabled={isSaving}
-                  className="px-6 py-3 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white rounded-xl transition-all flex items-center gap-2"
-                >
-                  {isSaving ? (
-                    <>
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                      Kaydediliyor...
-                    </>
-                  ) : (
-                    'Kaydet'
-                  )}
-                </button>
+              <div>
+                <p className="text-2xl font-bold text-white">{services.length}</p>
+                <p className="text-sm text-slate-400">Toplam Menü</p>
               </div>
             </div>
           </div>
+          <div className="glass rounded-xl p-4 border border-slate-700">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-green-500/20 rounded-lg flex items-center justify-center">
+                <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-white">{services.filter(s => s.active).length}</p>
+                <p className="text-sm text-slate-400">Aktif Menü</p>
+              </div>
+            </div>
+          </div>
+          <div className="glass rounded-xl p-4 border border-slate-700">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-purple-500/20 rounded-lg flex items-center justify-center">
+                <svg className="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-white">
+                  {services.reduce((acc, s) => acc + (s.pages?.length || 0), 0)}
+                </p>
+                <p className="text-sm text-slate-400">Toplam Sayfa</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Services List */}
+        {services.length === 0 ? (
+          <div className="glass rounded-xl p-12 text-center border border-slate-700">
+            <div className="w-16 h-16 bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-8 h-8 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+              </svg>
+            </div>
+            <h3 className="text-xl font-bold text-white mb-2">Henüz Hizmet Yok</h3>
+            <p className="text-slate-400">API'den herhangi bir hizmet verisi alınamadı.</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {services.map((service) => (
+              <div
+                key={service.id}
+                className="glass rounded-xl border border-slate-700 overflow-hidden"
+              >
+                {/* Service Header */}
+                <div 
+                  className="p-6 cursor-pointer hover:bg-slate-800/30 transition-colors"
+                  onClick={() => toggleMenu(service.id)}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 bg-gradient-to-br from-cyan-500 to-blue-500 rounded-xl flex items-center justify-center">
+                        <span className="text-white font-bold text-lg">{service.id}</span>
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-bold text-white">{service.title}</h3>
+                        <p className="text-slate-400 text-sm mt-1">{service.description}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <span className={`px-3 py-1 text-xs font-medium rounded-full ${
+                        service.active 
+                          ? 'bg-green-500/20 text-green-400 border border-green-500/30'
+                          : 'bg-red-500/20 text-red-400 border border-red-500/30'
+                      }`}>
+                        {service.active ? 'Aktif' : 'Pasif'}
+                      </span>
+                      <div className="flex items-center gap-2 text-slate-400">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        <span className="text-sm">{service.pages?.length || 0} sayfa</span>
+                      </div>
+                      <svg 
+                        className={`w-5 h-5 text-slate-400 transition-transform duration-200 ${
+                          expandedMenus[service.id] ? 'rotate-180' : ''
+                        }`}
+                        fill="none" 
+                        stroke="currentColor" 
+                        viewBox="0 0 24 24"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Pages List (Expandable) */}
+                {expandedMenus[service.id] && (
+                  <div className="border-t border-slate-700 bg-slate-900/30">
+                    {service.pages && service.pages.length > 0 ? (
+                      <div className="divide-y divide-slate-700/50">
+                        {service.pages.map((page, index) => (
+                          <div key={page.id} className="p-4 pl-20 hover:bg-slate-800/20 transition-colors">
+                            <div className="flex items-start justify-between">
+                              <div className="flex items-start gap-3">
+                                <div className="w-8 h-8 bg-slate-700 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                                  <span className="text-sm text-slate-300">{index + 1}</span>
+                                </div>
+                                <div>
+                                  <h4 className="text-white font-medium">{page.title}</h4>
+                                  {page.content && (
+                                    <p className="text-slate-400 text-sm mt-1 line-clamp-2">
+                                      {page.content}
+                                    </p>
+                                  )}
+                                  {page.images && page.images.length > 0 && (
+                                    <div className="flex items-center gap-1 mt-2 text-xs text-slate-500">
+                                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                      </svg>
+                                      <span>{page.images.length} görsel</span>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                              <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                                page.active 
+                                  ? 'bg-green-500/20 text-green-400'
+                                  : 'bg-red-500/20 text-red-400'
+                              }`}>
+                                {page.active ? 'Aktif' : 'Pasif'}
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="p-6 pl-20 text-center">
+                        <p className="text-slate-500 text-sm">Bu menüye ait sayfa bulunmuyor.</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
         )}
+
+        {/* Info Card */}
+        <div className="mt-8 glass rounded-xl p-6 border border-slate-700">
+          <div className="flex items-start gap-4">
+            <div className="w-10 h-10 bg-blue-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
+              <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div>
+              <h4 className="text-white font-medium mb-1">API Endpoint</h4>
+              <p className="text-slate-400 text-sm">
+                Bu veriler <code className="px-2 py-0.5 bg-slate-800 rounded text-cyan-400">/internal/service-menus/with-pages</code> endpoint'inden çekilmektedir.
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Toast */}
@@ -288,4 +287,3 @@ export default function HizmetlerYonetimiPage() {
     </div>
   );
 }
-
