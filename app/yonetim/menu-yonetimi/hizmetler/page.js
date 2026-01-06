@@ -10,9 +10,57 @@ export default function HizmetlerYonetimiPage() {
   const [services, setServices] = useState([]);
   const [expandedMenus, setExpandedMenus] = useState({});
   const [toast, setToast] = useState(null);
+  const [deleteModal, setDeleteModal] = useState({ isOpen: false, id: null, title: '', type: '' });
+  const [updateModal, setUpdateModal] = useState({ isOpen: false, id: null, data: null, type: '' });
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
 
   const showToast = (message, type = "success") => {
     setToast({ message, type });
+  };
+
+  const handleDelete = async () => {
+    if (!deleteModal.id) return;
+    
+    setIsDeleting(true);
+    try {
+      await serviceMenuService.deleteServicePage(deleteModal.id);
+      showToast(`"${deleteModal.title}" başarıyla silindi`, 'success');
+      setDeleteModal({ isOpen: false, id: null, title: '', type: '' });
+      fetchServices();
+    } catch (error) {
+      console.error('Delete error:', error);
+      showToast(error.message || 'Silme işlemi başarısız oldu', 'error');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const handleUpdate = async () => {
+    if (!updateModal.id || !updateModal.data) return;
+    
+    setIsUpdating(true);
+    try {
+      await serviceMenuService.updateServicePage(updateModal.id, updateModal.data);
+      showToast(`"${updateModal.data.title}" başarıyla güncellendi`, 'success');
+      setUpdateModal({ isOpen: false, id: null, data: null, type: '' });
+      fetchServices();
+    } catch (error) {
+      console.error('Update error:', error);
+      showToast(error.message || 'Güncelleme işlemi başarısız oldu', 'error');
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const openDeleteModal = (id, title, type, e) => {
+    e.stopPropagation();
+    setDeleteModal({ isOpen: true, id, title, type });
+  };
+
+  const openUpdateModal = (id, data, type, e) => {
+    e.stopPropagation();
+    setUpdateModal({ isOpen: true, id, data: { ...data }, type });
   };
 
   useEffect(() => {
@@ -179,6 +227,30 @@ export default function HizmetlerYonetimiPage() {
                       </div>
                     </div>
                     <div className="flex items-center gap-4">
+                      {/* Update Button for Menu */}
+                      <button
+                        onClick={(e) => openUpdateModal(service.id, { 
+                          title: service.title, 
+                          description: service.description, 
+                          active: service.active 
+                        }, 'menu', e)}
+                        className="p-2 bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 rounded-lg transition-colors"
+                        title="Güncelle"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                      </button>
+                      {/* Delete Button for Menu */}
+                      <button
+                        onClick={(e) => openDeleteModal(service.id, service.title, 'menu', e)}
+                        className="p-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded-lg transition-colors"
+                        title="Sil"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                      </button>
                       <span className={`px-3 py-1 text-xs font-medium rounded-full ${
                         service.active 
                           ? 'bg-green-500/20 text-green-400 border border-green-500/30'
@@ -235,13 +307,39 @@ export default function HizmetlerYonetimiPage() {
                                   )}
                                 </div>
                               </div>
-                              <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                                page.active 
-                                  ? 'bg-green-500/20 text-green-400'
-                                  : 'bg-red-500/20 text-red-400'
-                              }`}>
-                                {page.active ? 'Aktif' : 'Pasif'}
-                              </span>
+                              <div className="flex items-center gap-2">
+                                {/* Update Button for Page */}
+                                <button
+                                  onClick={(e) => openUpdateModal(page.id, { 
+                                    title: page.title, 
+                                    content: page.content || '', 
+                                    active: page.active 
+                                  }, 'page', e)}
+                                  className="p-1.5 bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 rounded-lg transition-colors"
+                                  title="Güncelle"
+                                >
+                                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                  </svg>
+                                </button>
+                                {/* Delete Button for Page */}
+                                <button
+                                  onClick={(e) => openDeleteModal(page.id, page.title, 'page', e)}
+                                  className="p-1.5 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded-lg transition-colors"
+                                  title="Sil"
+                                >
+                                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                  </svg>
+                                </button>
+                                <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                                  page.active 
+                                    ? 'bg-green-500/20 text-green-400'
+                                    : 'bg-red-500/20 text-red-400'
+                                }`}>
+                                  {page.active ? 'Aktif' : 'Pasif'}
+                                </span>
+                              </div>
                             </div>
                           </div>
                         ))}
@@ -275,6 +373,168 @@ export default function HizmetlerYonetimiPage() {
           </div>
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {deleteModal.isOpen && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="glass rounded-2xl p-6 max-w-md w-full border border-slate-700">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-12 h-12 bg-red-500/20 rounded-xl flex items-center justify-center">
+                <svg className="w-6 h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-white">Silme Onayı</h3>
+                <p className="text-slate-400 text-sm">Bu işlem geri alınamaz</p>
+              </div>
+            </div>
+            <p className="text-slate-300 mb-6">
+              <span className="font-semibold text-white">"{deleteModal.title}"</span> {deleteModal.type === 'menu' ? 'menüsünü' : 'sayfasını'} silmek istediğinizden emin misiniz?
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setDeleteModal({ isOpen: false, id: null, title: '', type: '' })}
+                className="flex-1 px-4 py-2.5 bg-slate-700 hover:bg-slate-600 text-white rounded-xl transition-colors"
+                disabled={isDeleting}
+              >
+                İptal
+              </button>
+              <button
+                onClick={handleDelete}
+                disabled={isDeleting}
+                className="flex-1 px-4 py-2.5 bg-red-500 hover:bg-red-600 text-white rounded-xl transition-colors flex items-center justify-center gap-2"
+              >
+                {isDeleting ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    Siliniyor...
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                    Sil
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Update Modal */}
+      {updateModal.isOpen && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="glass rounded-2xl p-6 max-w-lg w-full border border-slate-700">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center">
+                <svg className="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-white">
+                  {updateModal.type === 'menu' ? 'Menü Güncelle' : 'Sayfa Güncelle'}
+                </h3>
+                <p className="text-slate-400 text-sm">Bilgileri düzenleyin</p>
+              </div>
+            </div>
+            
+            <div className="space-y-4 mb-6">
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-2">Başlık</label>
+                <input
+                  type="text"
+                  value={updateModal.data?.title || ''}
+                  onChange={(e) => setUpdateModal(prev => ({
+                    ...prev,
+                    data: { ...prev.data, title: e.target.value }
+                  }))}
+                  className="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-cyan-400 transition-colors"
+                  placeholder="Başlık girin"
+                />
+              </div>
+              
+              {updateModal.type === 'menu' ? (
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">Açıklama</label>
+                  <textarea
+                    value={updateModal.data?.description || ''}
+                    onChange={(e) => setUpdateModal(prev => ({
+                      ...prev,
+                      data: { ...prev.data, description: e.target.value }
+                    }))}
+                    rows={3}
+                    className="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-cyan-400 transition-colors resize-none"
+                    placeholder="Açıklama girin"
+                  />
+                </div>
+              ) : (
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">İçerik</label>
+                  <textarea
+                    value={updateModal.data?.content || ''}
+                    onChange={(e) => setUpdateModal(prev => ({
+                      ...prev,
+                      data: { ...prev.data, content: e.target.value }
+                    }))}
+                    rows={4}
+                    className="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-cyan-400 transition-colors resize-none"
+                    placeholder="İçerik girin"
+                  />
+                </div>
+              )}
+              
+              <div className="flex items-center gap-3">
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={updateModal.data?.active || false}
+                    onChange={(e) => setUpdateModal(prev => ({
+                      ...prev,
+                      data: { ...prev.data, active: e.target.checked }
+                    }))}
+                    className="sr-only peer"
+                  />
+                  <div className="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cyan-500"></div>
+                </label>
+                <span className="text-slate-300 text-sm">Aktif</span>
+              </div>
+            </div>
+            
+            <div className="flex gap-3">
+              <button
+                onClick={() => setUpdateModal({ isOpen: false, id: null, data: null, type: '' })}
+                className="flex-1 px-4 py-2.5 bg-slate-700 hover:bg-slate-600 text-white rounded-xl transition-colors"
+                disabled={isUpdating}
+              >
+                İptal
+              </button>
+              <button
+                onClick={handleUpdate}
+                disabled={isUpdating}
+                className="flex-1 px-4 py-2.5 bg-cyan-500 hover:bg-cyan-600 text-white rounded-xl transition-colors flex items-center justify-center gap-2"
+              >
+                {isUpdating ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    Güncelleniyor...
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    Güncelle
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Toast */}
       {toast && (

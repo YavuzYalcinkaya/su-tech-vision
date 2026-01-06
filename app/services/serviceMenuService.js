@@ -100,6 +100,84 @@ class ServiceMenuService {
       throw error;
     }
   }
+
+  /**
+   * Delete a service page by ID
+   * @param {number} id - Service page ID
+   * @returns {Promise<void>}
+   */
+  async deleteServicePage(id) {
+    console.log('deleteServicePage', id);
+    try {
+      const internalApiKey = process.env.NEXT_PUBLIC_INTERNAL_API_KEY;
+      
+      if (!internalApiKey) {
+        throw new Error('Internal API key yapılandırılmamış');
+      }
+
+      const response = await fetch(`${API_BASE_URL}/internal/service-pages/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${internalApiKey}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Silme işlemi başarısız oldu');
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Delete service page error:', error);
+      
+      if (error.message === 'Failed to fetch' || error.name === 'TypeError') {
+        throw new Error('Sunucuya bağlanılamadı. İnternet bağlantınızı kontrol edin.');
+      }
+      
+      throw error;
+    }
+  }
+
+  /**
+   * Update a service page by ID
+   * @param {number} id - Service page ID
+   * @param {Object} data - Updated service page data
+   * @returns {Promise<Object>} Updated service page
+   */
+  async updateServicePage(id, data) {
+    try {
+      const internalApiKey = process.env.NEXT_PUBLIC_INTERNAL_API_KEY;
+      
+      if (!internalApiKey) {
+        throw new Error('Internal API key yapılandırılmamış');
+      }
+
+      const response = await fetch(`${API_BASE_URL}/internal/service-pages/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${internalApiKey}`,
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        throw new Error('Güncelleme işlemi başarısız oldu');
+      }
+
+      const result = await response.json();
+      return result;
+    } catch (error) {
+      console.error('Update service page error:', error);
+      
+      if (error.message === 'Failed to fetch' || error.name === 'TypeError') {
+        throw new Error('Sunucuya bağlanılamadı. İnternet bağlantınızı kontrol edin.');
+      }
+      
+      throw error;
+    }
+  }
 }
 
 const serviceMenuService = new ServiceMenuService();
