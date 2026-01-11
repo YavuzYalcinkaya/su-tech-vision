@@ -1,6 +1,9 @@
+import { Suspense } from "react";
 import "./globals.css";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
+import PageTransition from "./components/PageTransition";
+import Loading from "./loading";
 
 export const metadata = {
   title: "SU Tech Vision | Geleceği Şekillendiriyoruz",
@@ -14,7 +17,11 @@ export default function RootLayout({ children }) {
       <body className="bg-slate-950 text-white">
         <Header />
         <main className="pt-20">
-          {children}
+          <Suspense fallback={<Loading />}>
+            <PageTransition>
+              {children}
+            </PageTransition>
+          </Suspense>
         </main>
         <Footer />
       </body>
