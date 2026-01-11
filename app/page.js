@@ -1,66 +1,11 @@
 import Link from "next/link";
+import HeroSlider from "./components/HeroSlider";
 
 export default function Home() {
   return (
     <>
-      {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-grid">
-        {/* Background Effects */}
-        <div className="absolute inset-0 bg-radial"></div>
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-cyan-500/20 rounded-full blur-3xl animate-float"></div>
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl animate-float" style={{ animationDelay: "2s" }}></div>
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-purple-500/10 rounded-full blur-3xl"></div>
-
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div className="animate-fade-in-up">
-            <span className="inline-block px-4 py-2 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-sm font-medium mb-8">
-              🚀 Geleceğin Teknolojisi Bugün
-            </span>
-          </div>
-          
-          <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold mb-6 animate-fade-in-up" style={{ animationDelay: "100ms" }}>
-            <span className="text-white">İşinizi </span>
-            <span className="gradient-text">Dijital Dünyada</span>
-            <br />
-            <span className="text-white">Zirveye Taşıyoruz</span>
-          </h1>
-          
-          <p className="text-xl text-slate-400 max-w-2xl mx-auto mb-10 animate-fade-in-up" style={{ animationDelay: "200ms" }}>
-            Yenilikçi teknoloji çözümleri ve profesyonel ekibimizle işletmenizin dijital dönüşümüne öncülük ediyoruz.
-          </p>
-          
-          <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in-up" style={{ animationDelay: "300ms" }}>
-            <Link href="/hizmetlerimiz" className="btn-primary text-center">
-              Hizmetlerimizi Keşfedin
-            </Link>
-            <Link href="/iletisim" className="btn-secondary text-center">
-              İletişime Geçin
-            </Link>
-          </div>
-
-          {/* Stats */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-8 mt-20 animate-fade-in-up" style={{ animationDelay: "400ms" }}>
-            {[
-              { number: "150+", label: "Tamamlanan Proje" },
-              { number: "50+", label: "Mutlu Müşteri" },
-              { number: "10+", label: "Yıllık Deneyim" },
-              { number: "24/7", label: "Destek" },
-            ].map((stat, index) => (
-              <div key={index} className="text-center">
-                <div className="text-3xl sm:text-4xl font-bold gradient-text mb-2">{stat.number}</div>
-                <div className="text-slate-400 text-sm">{stat.label}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Scroll Indicator */}
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
-          <div className="w-6 h-10 rounded-full border-2 border-slate-600 flex items-start justify-center p-2">
-            <div className="w-1 h-2 bg-cyan-400 rounded-full"></div>
-          </div>
-        </div>
-      </section>
+      {/* Hero Slider */}
+      <HeroSlider />
 
       {/* Services Preview */}
       <section className="section-padding bg-slate-900/50">
