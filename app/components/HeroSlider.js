@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, EffectFade, Navigation, Pagination } from "swiper/modules";
@@ -42,9 +42,18 @@ const slides = [
 
 export default function HeroSlider() {
   const [activeIndex, setActiveIndex] = useState(0);
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  useEffect(() => {
+    // Trigger entrance animation after component mounts
+    const timer = setTimeout(() => {
+      setIsLoaded(true);
+    }, 100);
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
-    <section className="relative h-screen w-full overflow-hidden">
+    <section className={`relative h-screen w-full overflow-hidden transition-all duration-1000 ease-out ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
       <Swiper
         modules={[Autoplay, EffectFade, Navigation, Pagination]}
         effect="fade"
@@ -149,22 +158,22 @@ export default function HeroSlider() {
       </Swiper>
 
       {/* Custom Navigation Arrows */}
-      <button className="swiper-button-prev-custom absolute left-4 sm:left-8 top-1/2 -translate-y-1/2 z-30 w-14 h-14 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:bg-white/20 hover:scale-110 transition-all duration-300 group">
+      <button className={`swiper-button-prev-custom absolute left-4 sm:left-8 top-1/2 -translate-y-1/2 z-30 w-14 h-14 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:bg-white/20 hover:scale-110 transition-all duration-700 group ${isLoaded ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-10'}`} style={{ transitionDelay: '500ms' }}>
         <svg className="w-6 h-6 transform group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
         </svg>
       </button>
-      <button className="swiper-button-next-custom absolute right-4 sm:right-8 top-1/2 -translate-y-1/2 z-30 w-14 h-14 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:bg-white/20 hover:scale-110 transition-all duration-300 group">
+      <button className={`swiper-button-next-custom absolute right-4 sm:right-8 top-1/2 -translate-y-1/2 z-30 w-14 h-14 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center text-white hover:bg-white/20 hover:scale-110 transition-all duration-700 group ${isLoaded ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-10'}`} style={{ transitionDelay: '500ms' }}>
         <svg className="w-6 h-6 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
         </svg>
       </button>
 
       {/* Custom Pagination */}
-      <div className="swiper-pagination-custom absolute bottom-8 left-1/2 -translate-x-1/2 z-30 flex items-center gap-3"></div>
+      <div className={`swiper-pagination-custom absolute bottom-8 left-1/2 -translate-x-1/2 z-30 flex items-center gap-3 transition-all duration-700 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`} style={{ transitionDelay: '700ms' }}></div>
 
       {/* Slide Counter */}
-      <div className="absolute bottom-8 right-8 z-30 hidden sm:flex items-center gap-3 bg-white/10 backdrop-blur-md rounded-full px-5 py-2.5 border border-white/20">
+      <div className={`absolute bottom-8 right-8 z-30 hidden sm:flex items-center gap-3 bg-white/10 backdrop-blur-md rounded-full px-5 py-2.5 border border-white/20 transition-all duration-700 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`} style={{ transitionDelay: '800ms' }}>
         <span className="text-2xl font-bold text-white">{String(activeIndex + 1).padStart(2, "0")}</span>
         <div className="w-8 h-0.5 bg-white/30 rounded-full overflow-hidden">
           <div 
@@ -176,7 +185,7 @@ export default function HeroSlider() {
       </div>
 
       {/* Bottom Progress Bar */}
-      <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/10 z-30">
+      <div className={`absolute bottom-0 left-0 right-0 h-1 bg-white/10 z-30 transition-all duration-700 ${isLoaded ? 'opacity-100' : 'opacity-0'}`} style={{ transitionDelay: '900ms' }}>
         <div 
           className="h-full bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 transition-all duration-500"
           style={{ width: `${((activeIndex + 1) / slides.length) * 100}%` }}
@@ -184,10 +193,10 @@ export default function HeroSlider() {
       </div>
 
       {/* Decorative Elements */}
-      <div className="absolute top-20 right-20 w-32 h-32 border border-cyan-500/20 rounded-full animate-spin-slow z-0"></div>
-      <div className="absolute bottom-40 left-20 w-24 h-24 border border-blue-500/20 rounded-full animate-spin-slow z-0" style={{ animationDirection: 'reverse' }}></div>
-      <div className="absolute top-1/3 right-1/4 w-2 h-2 bg-cyan-400 rounded-full animate-pulse z-0"></div>
-      <div className="absolute bottom-1/3 left-1/3 w-2 h-2 bg-blue-400 rounded-full animate-pulse z-0" style={{ animationDelay: '1s' }}></div>
+      <div className={`absolute top-20 right-20 w-32 h-32 border border-cyan-500/20 rounded-full animate-spin-slow z-0 transition-all duration-1000 ${isLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-50'}`} style={{ transitionDelay: '1000ms' }}></div>
+      <div className={`absolute bottom-40 left-20 w-24 h-24 border border-blue-500/20 rounded-full animate-spin-slow z-0 transition-all duration-1000 ${isLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-50'}`} style={{ animationDirection: 'reverse', transitionDelay: '1100ms' }}></div>
+      <div className={`absolute top-1/3 right-1/4 w-2 h-2 bg-cyan-400 rounded-full animate-pulse z-0 transition-all duration-700 ${isLoaded ? 'opacity-100' : 'opacity-0'}`} style={{ transitionDelay: '1200ms' }}></div>
+      <div className={`absolute bottom-1/3 left-1/3 w-2 h-2 bg-blue-400 rounded-full animate-pulse z-0 transition-all duration-700 ${isLoaded ? 'opacity-100' : 'opacity-0'}`} style={{ animationDelay: '1s', transitionDelay: '1300ms' }}></div>
 
       {/* Custom Styles */}
       <style jsx global>{`
