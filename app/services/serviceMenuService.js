@@ -106,8 +106,7 @@ class ServiceMenuService {
    * @param {number} id - Service page ID
    * @returns {Promise<void>}
    */
-  async deleteServicePage(id) {
-    console.log('deleteServicePage', id);
+  async deleteServiceMenu(id) {
     try {
       const internalApiKey = process.env.NEXT_PUBLIC_INTERNAL_API_KEY;
       
@@ -115,7 +114,7 @@ class ServiceMenuService {
         throw new Error('Internal API key yapılandırılmamış');
       }
 
-      const response = await fetch(`${API_BASE_URL}/internal/service-pages/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/internal/service-menus/${id}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -150,8 +149,6 @@ class ServiceMenuService {
     try {
       const internalApiKey = process.env.NEXT_PUBLIC_INTERNAL_API_KEY;
 
-      console.log('internalApiKey', internalApiKey);
-      
       if (!internalApiKey) {
         throw new Error('Internal API key yapılandırılmamış');
       }
@@ -177,6 +174,8 @@ class ServiceMenuService {
         }
       });
 
+      console.log('formData', formData);
+
       const response = await fetch(`${API_BASE_URL}/internal/service-menus`, {
         method: 'POST',
         headers: {
@@ -184,6 +183,8 @@ class ServiceMenuService {
         },
         body: formData,
       });
+
+      console.log('response', response);
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
@@ -194,6 +195,69 @@ class ServiceMenuService {
       return result;
     } catch (error) {
       console.error('Create service menu error:', error);
+      
+      if (error.message === 'Failed to fetch' || error.name === 'TypeError') {
+        throw new Error('Sunucuya bağlanılamadı. İnternet bağlantınızı kontrol edin.');
+      }
+      
+      throw error;
+    }
+  }
+
+  /**
+   * Create a new service page under a menu
+   * @param {number} menuId - Menu ID to add the page to
+   * @param {Object} pageData - Page data { title, description, active }
+   * @param {File} image - Main image file
+   * @param {File[]} additionalImages - Additional image files (imageUrl1-4)
+   * @returns {Promise<Object>} Created service page
+   */
+  async createServicePage(menuId, pageData, image, additionalImages = []) {
+    try {
+      const internalApiKey = process.env.NEXT_PUBLIC_INTERNAL_API_KEY;
+
+      if (!internalApiKey) {
+        throw new Error('Internal API key yapılandırılmamış');
+      }
+
+      const formData = new FormData();
+      
+      // Add page data as JSON string
+      formData.append('menu', JSON.stringify({
+        title: pageData.title,
+        description: pageData.description,
+        active: pageData.active
+      }));
+      
+      // Add main image if provided
+      if (image) {
+        formData.append('image', image);
+      }
+      
+      // Add additional images (imageUrl1, imageUrl2, imageUrl3, imageUrl4)
+      additionalImages.forEach((img, index) => {
+        if (img) {
+          formData.append(`imageUrl${index + 1}`, img);
+        }
+      });
+
+      const response = await fetch(`${API_BASE_URL}/internal/service-pages/menu/${menuId}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${internalApiKey}`,
+        },
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Alt sayfa oluşturma başarısız oldu');
+      }
+
+      const result = await response.json();
+      return result;
+    } catch (error) {
+      console.error('Create service page error:', error);
       
       if (error.message === 'Failed to fetch' || error.name === 'TypeError') {
         throw new Error('Sunucuya bağlanılamadı. İnternet bağlantınızı kontrol edin.');

@@ -13,9 +13,11 @@ export default function HizmetlerYonetimiPage() {
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, id: null, title: '', type: '' });
   const [updateModal, setUpdateModal] = useState({ isOpen: false, id: null, data: null, type: '' });
   const [createModal, setCreateModal] = useState({ isOpen: false });
+  const [createPageModal, setCreatePageModal] = useState({ isOpen: false, menuId: null, menuTitle: '' });
   const [isDeleting, setIsDeleting] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
+  const [isCreatingPage, setIsCreatingPage] = useState(false);
   
   // Create form state
   const [createForm, setCreateForm] = useState({
@@ -38,6 +40,27 @@ export default function HizmetlerYonetimiPage() {
     imageUrl4: null,
   });
 
+  // Create page form state
+  const [createPageForm, setCreatePageForm] = useState({
+    title: '',
+    description: '',
+    active: true,
+    image: null,
+    imageUrl1: null,
+    imageUrl2: null,
+    imageUrl3: null,
+    imageUrl4: null,
+  });
+  
+  // Page image previews
+  const [pageImagePreviews, setPageImagePreviews] = useState({
+    image: null,
+    imageUrl1: null,
+    imageUrl2: null,
+    imageUrl3: null,
+    imageUrl4: null,
+  });
+
   const showToast = (message, type = "success") => {
     setToast({ message, type });
   };
@@ -47,7 +70,7 @@ export default function HizmetlerYonetimiPage() {
     
     setIsDeleting(true);
     try {
-      await serviceMenuService.deleteServicePage(deleteModal.id);
+      await serviceMenuService.deleteServiceMenu(deleteModal.id);
       showToast(`"${deleteModal.title}" başarıyla silindi`, 'success');
       setDeleteModal({ isOpen: false, id: null, title: '', type: '' });
       fetchServices();
@@ -149,6 +172,85 @@ export default function HizmetlerYonetimiPage() {
     } finally {
       setIsCreating(false);
     }
+  };
+
+  // Page image handlers
+  const handlePageImageChange = (field, file) => {
+    if (file) {
+      setCreatePageForm(prev => ({ ...prev, [field]: file }));
+      const previewUrl = URL.createObjectURL(file);
+      setPageImagePreviews(prev => ({ ...prev, [field]: previewUrl }));
+    }
+  };
+
+  const removePageImage = (field) => {
+    setCreatePageForm(prev => ({ ...prev, [field]: null }));
+    if (pageImagePreviews[field]) {
+      URL.revokeObjectURL(pageImagePreviews[field]);
+    }
+    setPageImagePreviews(prev => ({ ...prev, [field]: null }));
+  };
+
+  const resetCreatePageForm = () => {
+    setCreatePageForm({
+      title: '',
+      description: '',
+      active: true,
+      image: null,
+      imageUrl1: null,
+      imageUrl2: null,
+      imageUrl3: null,
+      imageUrl4: null,
+    });
+    Object.values(pageImagePreviews).forEach(url => {
+      if (url) URL.revokeObjectURL(url);
+    });
+    setPageImagePreviews({
+      image: null,
+      imageUrl1: null,
+      imageUrl2: null,
+      imageUrl3: null,
+      imageUrl4: null,
+    });
+  };
+
+  const handleCreatePage = async () => {
+    if (!createPageForm.title.trim()) {
+      showToast('Başlık alanı zorunludur', 'error');
+      return;
+    }
+
+    setIsCreatingPage(true);
+    try {
+      const pageData = {
+        title: createPageForm.title,
+        description: createPageForm.description,
+        active: createPageForm.active,
+      };
+
+      const additionalImages = [
+        createPageForm.imageUrl1,
+        createPageForm.imageUrl2,
+        createPageForm.imageUrl3,
+        createPageForm.imageUrl4,
+      ];
+
+      await serviceMenuService.createServicePage(createPageModal.menuId, pageData, createPageForm.image, additionalImages);
+      showToast(`"${createPageForm.title}" alt sayfası başarıyla oluşturuldu`, 'success');
+      setCreatePageModal({ isOpen: false, menuId: null, menuTitle: '' });
+      resetCreatePageForm();
+      fetchServices();
+    } catch (error) {
+      console.error('Create page error:', error);
+      showToast(error.message || 'Alt sayfa oluşturma başarısız oldu', 'error');
+    } finally {
+      setIsCreatingPage(false);
+    }
+  };
+
+  const openCreatePageModal = (menuId, menuTitle, e) => {
+    e.stopPropagation();
+    setCreatePageModal({ isOpen: true, menuId, menuTitle });
   };
 
   const openDeleteModal = (id, title, type, e) => {
@@ -334,13 +436,23 @@ export default function HizmetlerYonetimiPage() {
                         <p className="text-slate-400 text-sm mt-1">{service.description}</p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-4">
+<div className="flex items-center gap-4">
+                      {/* Add Sub Page Button */}
+                      <button
+                        onClick={(e) => openCreatePageModal(service.id, service.title, e)}
+                        className="p-2 bg-green-500/20 hover:bg-green-500/30 text-green-400 rounded-lg transition-colors"
+                        title="Alt Sayfa Ekle"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                        </svg>
+                      </button>
                       {/* Update Button for Menu */}
                       <button
-                        onClick={(e) => openUpdateModal(service.id, { 
-                          title: service.title, 
-                          description: service.description, 
-                          active: service.active 
+                        onClick={(e) => openUpdateModal(service.id, {
+                          title: service.title,
+                          description: service.description,
+                          active: service.active
                         }, 'menu', e)}
                         className="p-2 bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 rounded-lg transition-colors"
                         title="Güncelle"
@@ -482,7 +594,7 @@ export default function HizmetlerYonetimiPage() {
               </div>
             </div>
             <p className="text-slate-300 mb-6">
-              <span className="font-semibold text-white">"{deleteModal.title}"</span> {deleteModal.type === 'menu' ? 'menüsünü' : 'sayfasını'} silmek istediğinizden emin misiniz?
+              <span className="font-semibold text-white">&quot;{deleteModal.title}&quot;</span> {deleteModal.type === 'menu' ? 'menüsünü' : 'sayfasını'} silmek istediğinizden emin misiniz?
             </p>
             <div className="flex gap-3">
               <button
@@ -775,6 +887,171 @@ export default function HizmetlerYonetimiPage() {
                 className="flex-1 px-4 py-2.5 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white rounded-xl transition-colors flex items-center justify-center gap-2"
               >
                 {isCreating ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    Oluşturuluyor...
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    Oluştur
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Create Page Modal */}
+      {createPageModal.isOpen && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
+          <div className="glass rounded-2xl p-6 max-w-2xl w-full border border-slate-700 my-8">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl flex items-center justify-center">
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-white">Alt Sayfa Ekle</h3>
+                <p className="text-slate-400 text-sm">&quot;{createPageModal.menuTitle}&quot; menüsüne alt sayfa ekleyin</p>
+              </div>
+            </div>
+            
+            <div className="space-y-4 mb-6">
+              {/* Title */}
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-2">
+                  Başlık <span className="text-red-400">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={createPageForm.title}
+                  onChange={(e) => setCreatePageForm(prev => ({ ...prev, title: e.target.value }))}
+                  className="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-green-400 transition-colors"
+                  placeholder="Alt sayfa başlığı girin"
+                />
+              </div>
+              
+              {/* Description */}
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-2">Açıklama</label>
+                <textarea
+                  value={createPageForm.description}
+                  onChange={(e) => setCreatePageForm(prev => ({ ...prev, description: e.target.value }))}
+                  rows={3}
+                  className="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-green-400 transition-colors resize-none"
+                  placeholder="Alt sayfa açıklaması girin"
+                />
+              </div>
+              
+              {/* Active Toggle */}
+              <div className="flex items-center gap-3">
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={createPageForm.active}
+                    onChange={(e) => setCreatePageForm(prev => ({ ...prev, active: e.target.checked }))}
+                    className="sr-only peer"
+                  />
+                  <div className="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500"></div>
+                </label>
+                <span className="text-slate-300 text-sm">Aktif</span>
+              </div>
+              
+              {/* Main Image */}
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-2">Ana Görsel</label>
+                <div className="border-2 border-dashed border-slate-700 rounded-xl p-4 hover:border-green-500/50 transition-colors">
+                  {pageImagePreviews.image ? (
+                    <div className="relative">
+                      <img src={pageImagePreviews.image} alt="Preview" className="w-full h-40 object-cover rounded-lg" />
+                      <button
+                        type="button"
+                        onClick={() => removePageImage('image')}
+                        className="absolute top-2 right-2 p-1.5 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </div>
+                  ) : (
+                    <label className="flex flex-col items-center justify-center cursor-pointer py-4">
+                      <svg className="w-10 h-10 text-slate-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                      <span className="text-slate-400 text-sm">Görsel seçmek için tıklayın</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => handlePageImageChange('image', e.target.files[0])}
+                        className="hidden"
+                      />
+                    </label>
+                  )}
+                </div>
+              </div>
+              
+              {/* Additional Images */}
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-2">Ek Görseller</label>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  {['imageUrl1', 'imageUrl2', 'imageUrl3', 'imageUrl4'].map((field, index) => (
+                    <div key={field} className="border-2 border-dashed border-slate-700 rounded-xl p-2 hover:border-green-500/50 transition-colors">
+                      {pageImagePreviews[field] ? (
+                        <div className="relative">
+                          <img src={pageImagePreviews[field]} alt={`Preview ${index + 1}`} className="w-full h-24 object-cover rounded-lg" />
+                          <button
+                            type="button"
+                            onClick={() => removePageImage(field)}
+                            className="absolute top-1 right-1 p-1 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors"
+                          >
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </button>
+                        </div>
+                      ) : (
+                        <label className="flex flex-col items-center justify-center cursor-pointer py-4">
+                          <svg className="w-6 h-6 text-slate-500 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                          </svg>
+                          <span className="text-slate-500 text-xs">Görsel {index + 1}</span>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => handlePageImageChange(field, e.target.files[0])}
+                            className="hidden"
+                          />
+                        </label>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setCreatePageModal({ isOpen: false, menuId: null, menuTitle: '' });
+                  resetCreatePageForm();
+                }}
+                className="flex-1 px-4 py-2.5 bg-slate-700 hover:bg-slate-600 text-white rounded-xl transition-colors"
+                disabled={isCreatingPage}
+              >
+                İptal
+              </button>
+              <button
+                onClick={handleCreatePage}
+                disabled={isCreatingPage}
+                className="flex-1 px-4 py-2.5 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white rounded-xl transition-colors flex items-center justify-center gap-2"
+              >
+                {isCreatingPage ? (
                   <>
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
                     Oluşturuluyor...
