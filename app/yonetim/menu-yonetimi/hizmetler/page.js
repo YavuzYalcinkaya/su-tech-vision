@@ -65,13 +65,20 @@ export default function HizmetlerYonetimiPage() {
     setToast({ message, type });
   };
 
-  const handleDelete = async () => {
+const handleDelete = async () => {
     if (!deleteModal.id) return;
-    
+
     setIsDeleting(true);
     try {
-      await serviceMenuService.deleteServiceMenu(deleteModal.id);
-      showToast(`"${deleteModal.title}" başarıyla silindi`, 'success');
+      if (deleteModal.type === 'menu') {
+        // Delete menu - DELETE /internal/service-menus/{id}
+        await serviceMenuService.deleteServiceMenu(deleteModal.id);
+        showToast(`"${deleteModal.title}" menüsü başarıyla silindi`, 'success');
+      } else {
+        // Delete page - DELETE /internal/service-pages/{id}
+        await serviceMenuService.deleteServicePage(deleteModal.id);
+        showToast(`"${deleteModal.title}" alt sayfası başarıyla silindi`, 'success');
+      }
       setDeleteModal({ isOpen: false, id: null, title: '', type: '' });
       fetchServices();
     } catch (error) {

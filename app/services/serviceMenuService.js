@@ -102,8 +102,8 @@ class ServiceMenuService {
   }
 
   /**
-   * Delete a service page by ID
-   * @param {number} id - Service page ID
+   * Delete a service menu by ID
+   * @param {number} id - Service menu ID
    * @returns {Promise<void>}
    */
   async deleteServiceMenu(id) {
@@ -123,7 +123,44 @@ class ServiceMenuService {
       });
 
       if (!response.ok) {
-        throw new Error('Silme işlemi başarısız oldu');
+        throw new Error('Menü silme işlemi başarısız oldu');
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Delete service menu error:', error);
+      
+      if (error.message === 'Failed to fetch' || error.name === 'TypeError') {
+        throw new Error('Sunucuya bağlanılamadı. İnternet bağlantınızı kontrol edin.');
+      }
+      
+      throw error;
+    }
+  }
+
+  /**
+   * Delete a service page by ID
+   * @param {number} id - Service page ID
+   * @returns {Promise<void>}
+   */
+  async deleteServicePage(id) {
+    try {
+      const internalApiKey = process.env.NEXT_PUBLIC_INTERNAL_API_KEY;
+      
+      if (!internalApiKey) {
+        throw new Error('Internal API key yapılandırılmamış');
+      }
+
+      const response = await fetch(`${API_BASE_URL}/internal/service-pages/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${internalApiKey}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Alt sayfa silme işlemi başarısız oldu');
       }
 
       return true;
