@@ -140,6 +140,70 @@ class ServiceMenuService {
   }
 
   /**
+   * Create a new service menu with images
+   * @param {Object} menuData - Menu data { title, description, active }
+   * @param {File} image - Main image file
+   * @param {File[]} additionalImages - Additional image files (imageUrl1-4)
+   * @returns {Promise<Object>} Created service menu
+   */
+  async createServiceMenu(menuData, image, additionalImages = []) {
+    try {
+      const internalApiKey = process.env.NEXT_PUBLIC_INTERNAL_API_KEY;
+
+      console.log('internalApiKey', internalApiKey);
+      
+      if (!internalApiKey) {
+        throw new Error('Internal API key yapılandırılmamış');
+      }
+
+      const formData = new FormData();
+      
+      // Add menu data as JSON string
+      formData.append('menu', JSON.stringify({
+        title: menuData.title,
+        description: menuData.description,
+        active: menuData.active
+      }));
+      
+      // Add main image if provided
+      if (image) {
+        formData.append('image', image);
+      }
+      
+      // Add additional images (imageUrl1, imageUrl2, imageUrl3, imageUrl4)
+      additionalImages.forEach((img, index) => {
+        if (img) {
+          formData.append(`imageUrl${index + 1}`, img);
+        }
+      });
+
+      const response = await fetch(`${API_BASE_URL}/internal/service-menus`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${internalApiKey}`,
+        },
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Hizmet oluşturma başarısız oldu');
+      }
+
+      const result = await response.json();
+      return result;
+    } catch (error) {
+      console.error('Create service menu error:', error);
+      
+      if (error.message === 'Failed to fetch' || error.name === 'TypeError') {
+        throw new Error('Sunucuya bağlanılamadı. İnternet bağlantınızı kontrol edin.');
+      }
+      
+      throw error;
+    }
+  }
+
+  /**
    * Update a service page by ID
    * @param {number} id - Service page ID
    * @param {Object} data - Updated service page data

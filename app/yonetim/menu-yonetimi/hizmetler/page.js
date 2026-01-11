@@ -12,8 +12,31 @@ export default function HizmetlerYonetimiPage() {
   const [toast, setToast] = useState(null);
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, id: null, title: '', type: '' });
   const [updateModal, setUpdateModal] = useState({ isOpen: false, id: null, data: null, type: '' });
+  const [createModal, setCreateModal] = useState({ isOpen: false });
   const [isDeleting, setIsDeleting] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
+  
+  // Create form state
+  const [createForm, setCreateForm] = useState({
+    title: '',
+    description: '',
+    active: true,
+    image: null,
+    imageUrl1: null,
+    imageUrl2: null,
+    imageUrl3: null,
+    imageUrl4: null,
+  });
+  
+  // Image previews
+  const [imagePreviews, setImagePreviews] = useState({
+    image: null,
+    imageUrl1: null,
+    imageUrl2: null,
+    imageUrl3: null,
+    imageUrl4: null,
+  });
 
   const showToast = (message, type = "success") => {
     setToast({ message, type });
@@ -50,6 +73,81 @@ export default function HizmetlerYonetimiPage() {
       showToast(error.message || 'Güncelleme işlemi başarısız oldu', 'error');
     } finally {
       setIsUpdating(false);
+    }
+  };
+
+  const handleImageChange = (field, file) => {
+    if (file) {
+      setCreateForm(prev => ({ ...prev, [field]: file }));
+      // Create preview URL
+      const previewUrl = URL.createObjectURL(file);
+      setImagePreviews(prev => ({ ...prev, [field]: previewUrl }));
+    }
+  };
+
+  const removeImage = (field) => {
+    setCreateForm(prev => ({ ...prev, [field]: null }));
+    if (imagePreviews[field]) {
+      URL.revokeObjectURL(imagePreviews[field]);
+    }
+    setImagePreviews(prev => ({ ...prev, [field]: null }));
+  };
+
+  const resetCreateForm = () => {
+    setCreateForm({
+      title: '',
+      description: '',
+      active: true,
+      image: null,
+      imageUrl1: null,
+      imageUrl2: null,
+      imageUrl3: null,
+      imageUrl4: null,
+    });
+    // Clean up preview URLs
+    Object.values(imagePreviews).forEach(url => {
+      if (url) URL.revokeObjectURL(url);
+    });
+    setImagePreviews({
+      image: null,
+      imageUrl1: null,
+      imageUrl2: null,
+      imageUrl3: null,
+      imageUrl4: null,
+    });
+  };
+
+  const handleCreate = async () => {
+    if (!createForm.title.trim()) {
+      showToast('Başlık alanı zorunludur', 'error');
+      return;
+    }
+    
+    setIsCreating(true);
+    try {
+      const menuData = {
+        title: createForm.title,
+        description: createForm.description,
+        active: createForm.active,
+      };
+      
+      const additionalImages = [
+        createForm.imageUrl1,
+        createForm.imageUrl2,
+        createForm.imageUrl3,
+        createForm.imageUrl4,
+      ];
+      
+      await serviceMenuService.createServiceMenu(menuData, createForm.image, additionalImages);
+      showToast(`"${createForm.title}" başarıyla oluşturuldu`, 'success');
+      setCreateModal({ isOpen: false });
+      resetCreateForm();
+      fetchServices();
+    } catch (error) {
+      console.error('Create error:', error);
+      showToast(error.message || 'Oluşturma işlemi başarısız oldu', 'error');
+    } finally {
+      setIsCreating(false);
     }
   };
 
@@ -137,15 +235,26 @@ export default function HizmetlerYonetimiPage() {
               <p className="text-slate-400 mt-1">Hizmetlerimiz sayfasının içeriğini görüntüleyin</p>
             </div>
           </div>
-          <button
-            onClick={fetchServices}
-            className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-xl transition-colors flex items-center gap-2"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
-            Yenile
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={fetchServices}
+              className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-xl transition-colors flex items-center gap-2"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              Yenile
+            </button>
+            <button
+              onClick={() => setCreateModal({ isOpen: true })}
+              className="px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white rounded-xl transition-colors flex items-center gap-2 shadow-lg shadow-cyan-500/25"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              Yeni Hizmet Ekle
+            </button>
+          </div>
         </div>
 
         {/* Stats */}
@@ -202,7 +311,6 @@ export default function HizmetlerYonetimiPage() {
               </svg>
             </div>
             <h3 className="text-xl font-bold text-white mb-2">Henüz Hizmet Yok</h3>
-            <p className="text-slate-400">API'den herhangi bir hizmet verisi alınamadı.</p>
           </div>
         ) : (
           <div className="space-y-4">
@@ -356,22 +464,6 @@ export default function HizmetlerYonetimiPage() {
           </div>
         )}
 
-        {/* Info Card */}
-        <div className="mt-8 glass rounded-xl p-6 border border-slate-700">
-          <div className="flex items-start gap-4">
-            <div className="w-10 h-10 bg-blue-500/20 rounded-lg flex items-center justify-center flex-shrink-0">
-              <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-            <div>
-              <h4 className="text-white font-medium mb-1">API Endpoint</h4>
-              <p className="text-slate-400 text-sm">
-                Bu veriler <code className="px-2 py-0.5 bg-slate-800 rounded text-cyan-400">/internal/service-menus/with-pages</code> endpoint'inden çekilmektedir.
-              </p>
-            </div>
-          </div>
-        </div>
       </div>
 
       {/* Delete Confirmation Modal */}
@@ -528,6 +620,171 @@ export default function HizmetlerYonetimiPage() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
                     Güncelle
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Create Modal */}
+      {createModal.isOpen && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
+          <div className="glass rounded-2xl p-6 max-w-2xl w-full border border-slate-700 my-8">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-12 h-12 bg-gradient-to-br from-cyan-500 to-blue-500 rounded-xl flex items-center justify-center">
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-white">Yeni Hizmet Ekle</h3>
+                <p className="text-slate-400 text-sm">Hizmetlerimiz sayfasına yeni bir hizmet ekleyin</p>
+              </div>
+            </div>
+            
+            <div className="space-y-4 mb-6">
+              {/* Title */}
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-2">
+                  Başlık <span className="text-red-400">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={createForm.title}
+                  onChange={(e) => setCreateForm(prev => ({ ...prev, title: e.target.value }))}
+                  className="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-cyan-400 transition-colors"
+                  placeholder="Hizmet başlığı girin"
+                />
+              </div>
+              
+              {/* Description */}
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-2">Açıklama</label>
+                <textarea
+                  value={createForm.description}
+                  onChange={(e) => setCreateForm(prev => ({ ...prev, description: e.target.value }))}
+                  rows={3}
+                  className="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-cyan-400 transition-colors resize-none"
+                  placeholder="Hizmet açıklaması girin"
+                />
+              </div>
+              
+              {/* Active Toggle */}
+              <div className="flex items-center gap-3">
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={createForm.active}
+                    onChange={(e) => setCreateForm(prev => ({ ...prev, active: e.target.checked }))}
+                    className="sr-only peer"
+                  />
+                  <div className="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-cyan-500"></div>
+                </label>
+                <span className="text-slate-300 text-sm">Aktif</span>
+              </div>
+              
+              {/* Main Image */}
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-2">Ana Görsel</label>
+                <div className="border-2 border-dashed border-slate-700 rounded-xl p-4 hover:border-cyan-500/50 transition-colors">
+                  {imagePreviews.image ? (
+                    <div className="relative">
+                      <img src={imagePreviews.image} alt="Preview" className="w-full h-40 object-cover rounded-lg" />
+                      <button
+                        type="button"
+                        onClick={() => removeImage('image')}
+                        className="absolute top-2 right-2 p-1.5 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </div>
+                  ) : (
+                    <label className="flex flex-col items-center justify-center cursor-pointer py-4">
+                      <svg className="w-10 h-10 text-slate-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                      <span className="text-slate-400 text-sm">Görsel seçmek için tıklayın</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => handleImageChange('image', e.target.files[0])}
+                        className="hidden"
+                      />
+                    </label>
+                  )}
+                </div>
+              </div>
+              
+              {/* Additional Images */}
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-2">Ek Görseller</label>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  {['imageUrl1', 'imageUrl2', 'imageUrl3', 'imageUrl4'].map((field, index) => (
+                    <div key={field} className="border-2 border-dashed border-slate-700 rounded-xl p-2 hover:border-cyan-500/50 transition-colors">
+                      {imagePreviews[field] ? (
+                        <div className="relative">
+                          <img src={imagePreviews[field]} alt={`Preview ${index + 1}`} className="w-full h-24 object-cover rounded-lg" />
+                          <button
+                            type="button"
+                            onClick={() => removeImage(field)}
+                            className="absolute top-1 right-1 p-1 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors"
+                          >
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </button>
+                        </div>
+                      ) : (
+                        <label className="flex flex-col items-center justify-center cursor-pointer py-4">
+                          <svg className="w-6 h-6 text-slate-500 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                          </svg>
+                          <span className="text-slate-500 text-xs">Görsel {index + 1}</span>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => handleImageChange(field, e.target.files[0])}
+                            className="hidden"
+                          />
+                        </label>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setCreateModal({ isOpen: false });
+                  resetCreateForm();
+                }}
+                className="flex-1 px-4 py-2.5 bg-slate-700 hover:bg-slate-600 text-white rounded-xl transition-colors"
+                disabled={isCreating}
+              >
+                İptal
+              </button>
+              <button
+                onClick={handleCreate}
+                disabled={isCreating}
+                className="flex-1 px-4 py-2.5 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white rounded-xl transition-colors flex items-center justify-center gap-2"
+              >
+                {isCreating ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    Oluşturuluyor...
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    Oluştur
                   </>
                 )}
               </button>
