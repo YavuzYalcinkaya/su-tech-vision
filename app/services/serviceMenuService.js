@@ -268,6 +268,46 @@ class ServiceMenuService {
   }
 
   /**
+   * Update a service menu by ID
+   * @param {number} id - Service menu ID
+   * @param {Object} data - Updated service menu data { title, description, active }
+   * @returns {Promise<Object>} Updated service menu
+   */
+  async updateServiceMenu(id, data) {
+    try {
+      const internalApiKey = process.env.NEXT_PUBLIC_INTERNAL_API_KEY;
+      
+      if (!internalApiKey) {
+        throw new Error('Internal API key yapılandırılmamış');
+      }
+
+      const response = await fetch(`${API_BASE_URL}/internal/service-menus/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${internalApiKey}`,
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        throw new Error('Menü güncelleme işlemi başarısız oldu');
+      }
+
+      const result = await response.json();
+      return result;
+    } catch (error) {
+      console.error('Update service menu error:', error);
+      
+      if (error.message === 'Failed to fetch' || error.name === 'TypeError') {
+        throw new Error('Sunucuya bağlanılamadı. İnternet bağlantınızı kontrol edin.');
+      }
+      
+      throw error;
+    }
+  }
+
+  /**
    * Update a service page by ID
    * @param {number} id - Service page ID
    * @param {Object} data - Updated service page data
@@ -291,7 +331,7 @@ class ServiceMenuService {
       });
 
       if (!response.ok) {
-        throw new Error('Güncelleme işlemi başarısız oldu');
+        throw new Error('Alt sayfa güncelleme işlemi başarısız oldu');
       }
 
       const result = await response.json();

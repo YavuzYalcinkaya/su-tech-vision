@@ -82,13 +82,20 @@ export default function HizmetlerYonetimiPage() {
     }
   };
 
-  const handleUpdate = async () => {
+const handleUpdate = async () => {
     if (!updateModal.id || !updateModal.data) return;
-    
+
     setIsUpdating(true);
     try {
-      await serviceMenuService.updateServicePage(updateModal.id, updateModal.data);
-      showToast(`"${updateModal.data.title}" başarıyla güncellendi`, 'success');
+      if (updateModal.type === 'menu') {
+        // Update menu - PUT /internal/service-menus/{id}
+        await serviceMenuService.updateServiceMenu(updateModal.id, updateModal.data);
+        showToast(`"${updateModal.data.title}" menüsü başarıyla güncellendi`, 'success');
+      } else {
+        // Update page - PUT /internal/service-pages/{id}
+        await serviceMenuService.updateServicePage(updateModal.id, updateModal.data);
+        showToast(`"${updateModal.data.title}" alt sayfası başarıyla güncellendi`, 'success');
+      }
       setUpdateModal({ isOpen: false, id: null, data: null, type: '' });
       fetchServices();
     } catch (error) {
