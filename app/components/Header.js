@@ -7,14 +7,14 @@ import serviceMenuService from "../services/serviceMenuService";
 
 const navItems = [
   { name: "Anasayfa", path: "/" },
-  { 
-    name: "Hakkımızda", 
+  {
+    name: "Hakkımızda",
     path: "/hakkimizda",
     hasDropdown: true,
     subItems: [
       { name: "Hakkımızda", path: "/hakkimizda" },
       { name: "Kurumsal", path: "/kurumsal" },
-    ]
+    ],
   },
   { name: "Hizmetlerimiz", path: "/hizmetlerimiz", isServices: true },
   { name: "Referanslar", path: "/referanslar" },
@@ -33,7 +33,7 @@ export default function Header() {
   const [user, setUser] = useState(null);
   const pathname = usePathname();
   const router = useRouter();
-  
+
   // Timeout refs for hover delays
   const adminMenuTimeout = useRef(null);
   const menuManagementTimeout = useRef(null);
@@ -44,10 +44,10 @@ export default function Header() {
   useEffect(() => {
     // Check if user is logged in
     const checkUser = () => {
-      if (typeof window !== 'undefined') {
-        const username = localStorage.getItem('username');
-        const token = localStorage.getItem('authToken');
-        const role = localStorage.getItem('userRole');
+      if (typeof window !== "undefined") {
+        const username = localStorage.getItem("username");
+        const token = localStorage.getItem("authToken");
+        const role = localStorage.getItem("userRole");
         if (username && token) {
           setUser({ username, role });
         } else {
@@ -59,14 +59,14 @@ export default function Header() {
     checkUser();
 
     // Listen for storage changes (when user logs in/out in another tab)
-    window.addEventListener('storage', checkUser);
-    
+    window.addEventListener("storage", checkUser);
+
     // Custom event for same-tab login
-    window.addEventListener('userLogin', checkUser);
-    
+    window.addEventListener("userLogin", checkUser);
+
     return () => {
-      window.removeEventListener('storage', checkUser);
-      window.removeEventListener('userLogin', checkUser);
+      window.removeEventListener("storage", checkUser);
+      window.removeEventListener("userLogin", checkUser);
     };
   }, []);
 
@@ -76,10 +76,10 @@ export default function Header() {
       try {
         const data = await serviceMenuService.getServiceMenusWithPages();
         // Filter only active menus
-        const activeMenus = data.filter(menu => menu.active);
+        const activeMenus = data.filter((menu) => menu.active);
         setServiceMenus(activeMenus);
       } catch (error) {
-        console.error('Failed to fetch service menus:', error);
+        console.error("Failed to fetch service menus:", error);
       }
     };
 
@@ -88,10 +88,10 @@ export default function Header() {
 
   const handleSignOut = () => {
     authService.signOut();
-    localStorage.removeItem('username');
+    localStorage.removeItem("username");
     setUser(null);
     setIsMenuOpen(false);
-    router.push('/');
+    router.push("/");
   };
 
   // Improved hover handlers with delays
@@ -176,13 +176,15 @@ export default function Header() {
               <span className="text-xl font-bold bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
                 Tech Vision
               </span>
-              <p className="text-xs text-slate-400 -mt-1">Geleceği Şekillendiriyoruz</p>
+              <p className="text-xs text-slate-400 -mt-1">
+                Geleceği Şekillendiriyoruz
+              </p>
             </div>
           </Link>
 
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center gap-1">
-            {navItems.map((item) => (
+            {navItems.map((item) =>
               item.hasDropdown ? (
                 <div
                   key={item.path}
@@ -193,7 +195,7 @@ export default function Header() {
                   <Link
                     href={item.path}
                     className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 relative flex items-center gap-1 ${
-                      pathname === item.path || pathname === '/kurumsal'
+                      pathname === item.path || pathname === "/kurumsal"
                         ? "text-cyan-400"
                         : "text-slate-300 hover:text-white"
                     }`}
@@ -201,21 +203,28 @@ export default function Header() {
                     {item.name}
                     <svg
                       className={`w-4 h-4 transition-transform duration-200 ${
-                        isHakkimizdaOpen ? 'rotate-180' : ''
+                        isHakkimizdaOpen ? "rotate-180" : ""
                       }`}
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
                     >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 9l-7 7-7-7"
+                      />
                     </svg>
                     <span
                       className={`absolute bottom-0 left-1/2 -translate-x-1/2 h-0.5 bg-gradient-to-r from-cyan-400 to-blue-500 transition-all duration-300 ${
-                        pathname === item.path || pathname === '/kurumsal' ? "w-full" : "w-0 group-hover:w-full"
+                        pathname === item.path || pathname === "/kurumsal"
+                          ? "w-full"
+                          : "w-0 group-hover:w-full"
                       }`}
                     />
                   </Link>
-                  
+
                   {/* Dropdown */}
                   {isHakkimizdaOpen && (
                     <div className="absolute top-full left-0 mt-2 w-48 glass rounded-xl border border-slate-700 shadow-xl overflow-hidden z-50">
@@ -246,7 +255,7 @@ export default function Header() {
                   <Link
                     href={item.path}
                     className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 relative flex items-center gap-1 ${
-                      pathname.startsWith('/hizmetlerimiz')
+                      pathname.startsWith("/hizmetlerimiz")
                         ? "text-cyan-400"
                         : "text-slate-300 hover:text-white"
                     }`}
@@ -255,22 +264,29 @@ export default function Header() {
                     {serviceMenus.length > 0 && (
                       <svg
                         className={`w-4 h-4 transition-transform duration-200 ${
-                          isServicesOpen ? 'rotate-180' : ''
+                          isServicesOpen ? "rotate-180" : ""
                         }`}
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
                       >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 9l-7 7-7-7"
+                        />
                       </svg>
                     )}
                     <span
                       className={`absolute bottom-0 left-1/2 -translate-x-1/2 h-0.5 bg-gradient-to-r from-cyan-400 to-blue-500 transition-all duration-300 ${
-                        pathname.startsWith('/hizmetlerimiz') ? "w-full" : "w-0 group-hover:w-full"
+                        pathname.startsWith("/hizmetlerimiz")
+                          ? "w-full"
+                          : "w-0 group-hover:w-full"
                       }`}
                     />
                   </Link>
-                  
+
                   {/* Services Dropdown */}
                   {isServicesOpen && serviceMenus.length > 0 && (
                     <div className="absolute top-full left-0 mt-2 w-56 bg-slate-900/95 backdrop-blur-xl rounded-xl border border-slate-700 shadow-2xl overflow-visible z-50">
@@ -293,37 +309,50 @@ export default function Header() {
                               {menu.pages && menu.pages.length > 0 && (
                                 <svg
                                   className={`w-4 h-4 transition-transform duration-200 ${
-                                    activeServiceMenu === menu.id ? 'rotate-90' : ''
+                                    activeServiceMenu === menu.id
+                                      ? "rotate-90"
+                                      : ""
                                   }`}
                                   fill="none"
                                   stroke="currentColor"
                                   viewBox="0 0 24 24"
                                 >
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M9 5l7 7-7 7"
+                                  />
                                 </svg>
                               )}
                             </div>
-                            
+
                             {/* Pages Submenu */}
-                            {activeServiceMenu === menu.id && menu.pages && menu.pages.length > 0 && (
-                              <div 
-                                className="absolute left-full top-0 ml-1 w-52 bg-slate-900/95 backdrop-blur-xl border border-slate-700 rounded-xl shadow-2xl z-50"
-                                onMouseEnter={() => handleServiceItemEnter(menu.id)}
-                                onMouseLeave={handleServiceItemLeave}
-                              >
-                                <div className="py-2">
-                                  {menu.pages.filter(page => page.active).map((page) => (
-                                    <Link
-                                      key={page.id}
-                                      href={`/hizmetlerimiz/${menu.id}/${page.id}`}
-                                      className="block px-4 py-3 text-sm text-slate-300 hover:text-white hover:bg-slate-800/50 transition-all"
-                                    >
-                                      {page.title}
-                                    </Link>
-                                  ))}
+                            {activeServiceMenu === menu.id &&
+                              menu.pages &&
+                              menu.pages.length > 0 && (
+                                <div
+                                  className="absolute left-full top-0 ml-1 w-52 bg-slate-900/95 backdrop-blur-xl border border-slate-700 rounded-xl shadow-2xl z-50"
+                                  onMouseEnter={() =>
+                                    handleServiceItemEnter(menu.id)
+                                  }
+                                  onMouseLeave={handleServiceItemLeave}
+                                >
+                                  <div className="py-2">
+                                    {menu.pages
+                                      .filter((page) => page.active)
+                                      .map((page) => (
+                                        <Link
+                                          key={page.id}
+                                          href={`/hizmetlerimiz/${menu.id}/${page.id}`}
+                                          className="block px-4 py-3 text-sm text-slate-300 hover:text-white hover:bg-slate-800/50 transition-all"
+                                        >
+                                          {page.title}
+                                        </Link>
+                                      ))}
+                                  </div>
                                 </div>
-                              </div>
-                            )}
+                              )}
                           </div>
                         ))}
                       </div>
@@ -343,50 +372,33 @@ export default function Header() {
                   {item.name}
                   <span
                     className={`absolute bottom-0 left-1/2 -translate-x-1/2 h-0.5 bg-gradient-to-r from-cyan-400 to-blue-500 transition-all duration-300 ${
-                      pathname === item.path ? "w-full" : "w-0 group-hover:w-full"
+                      pathname === item.path
+                        ? "w-full"
+                        : "w-0 group-hover:w-full"
                     }`}
                   />
                 </Link>
               )
-            ))}
-            
+            )}
+
             {/* Admin Dropdown Menu */}
             {user && user.role === "ADMIN" && (
-              <div 
+              <div
                 className="relative"
                 onMouseEnter={handleAdminMenuEnter}
                 onMouseLeave={handleAdminMenuLeave}
               >
                 <button
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 relative group flex items-center gap-2 ${
-                    pathname.startsWith('/yonetim')
+                  className={`px-4 py-2 whitespace-nowrap rounded-lg text-sm font-medium transition-all duration-300 relative group flex items-center gap-2 ${
+                    pathname.startsWith("/yonetim")
                       ? "text-cyan-400"
                       : "text-slate-300 hover:text-white"
                   }`}
                 >
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-                    />
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                    />
-                  </svg>
                   Yönetim Paneli
                   <svg
                     className={`w-4 h-4 transition-transform duration-200 ${
-                      isAdminMenuOpen ? 'rotate-180' : ''
+                      isAdminMenuOpen ? "rotate-180" : ""
                     }`}
                     fill="none"
                     stroke="currentColor"
@@ -401,15 +413,19 @@ export default function Header() {
                   </svg>
                   <span
                     className={`absolute bottom-0 left-1/2 -translate-x-1/2 h-0.5 bg-gradient-to-r from-cyan-400 to-blue-500 transition-all duration-300 ${
-                      pathname.startsWith('/yonetim') ? "w-full" : "w-0 group-hover:w-full"
+                      pathname.startsWith("/yonetim")
+                        ? "w-full"
+                        : "w-0 group-hover:w-full"
                     }`}
                   />
                 </button>
-                
+
                 {/* Dropdown */}
                 <div
                   className={`absolute top-full mt-2 left-0 w-56 bg-slate-900/95 backdrop-blur-xl border border-slate-700 rounded-xl shadow-2xl transition-all duration-200 ${
-                    isAdminMenuOpen ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-2'
+                    isAdminMenuOpen
+                      ? "opacity-100 visible translate-y-0"
+                      : "opacity-0 invisible -translate-y-2"
                   }`}
                   onMouseEnter={handleAdminMenuEnter}
                   onMouseLeave={handleAdminMenuLeave}
@@ -434,9 +450,9 @@ export default function Header() {
                       </svg>
                       Kullanıcı Yönetimi
                     </Link>
-                    
+
                     {/* Menu Management with Submenu */}
-                    <div 
+                    <div
                       className="relative"
                       onMouseEnter={handleMenuManagementEnter}
                       onMouseLeave={handleMenuManagementLeave}
@@ -460,7 +476,7 @@ export default function Header() {
                         </div>
                         <svg
                           className={`w-4 h-4 transition-transform duration-200 ${
-                            isMenuManagementOpen ? 'rotate-90' : ''
+                            isMenuManagementOpen ? "rotate-90" : ""
                           }`}
                           fill="none"
                           stroke="currentColor"
@@ -474,11 +490,13 @@ export default function Header() {
                           />
                         </svg>
                       </div>
-                      
+
                       {/* Submenu */}
                       <div
                         className={`absolute left-full top-0 ml-1 w-52 bg-slate-900/95 backdrop-blur-xl border border-slate-700 rounded-xl shadow-2xl transition-all duration-200 z-50 ${
-                          isMenuManagementOpen ? 'opacity-100 visible translate-x-0' : 'opacity-0 invisible -translate-x-2'
+                          isMenuManagementOpen
+                            ? "opacity-100 visible translate-x-0"
+                            : "opacity-0 invisible -translate-x-2"
                         }`}
                         onMouseEnter={handleMenuManagementEnter}
                         onMouseLeave={handleMenuManagementLeave}
@@ -488,8 +506,18 @@ export default function Header() {
                             href="/yonetim/menu-yonetimi/hizmetler"
                             className="flex items-center gap-3 px-4 py-3 text-sm text-slate-300 hover:text-white hover:bg-slate-800/50 transition-all"
                           >
-                            <svg className="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            <svg
+                              className="w-4 h-4 text-cyan-400"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                              />
                             </svg>
                             Hizmetler
                           </Link>
@@ -497,8 +525,18 @@ export default function Header() {
                             href="/yonetim/menu-yonetimi/hakkimizda"
                             className="flex items-center gap-3 px-4 py-3 text-sm text-slate-300 hover:text-white hover:bg-slate-800/50 transition-all"
                           >
-                            <svg className="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            <svg
+                              className="w-4 h-4 text-cyan-400"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                              />
                             </svg>
                             Hakkımızda
                           </Link>
@@ -506,8 +544,18 @@ export default function Header() {
                             href="/yonetim/menu-yonetimi/ilanlar"
                             className="flex items-center gap-3 px-4 py-3 text-sm text-slate-300 hover:text-white hover:bg-slate-800/50 transition-all"
                           >
-                            <svg className="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                            <svg
+                              className="w-4 h-4 text-cyan-400"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                              />
                             </svg>
                             İlanlar
                           </Link>
@@ -518,7 +566,7 @@ export default function Header() {
                 </div>
               </div>
             )}
-            
+
             {/* User Section */}
             {user ? (
               <div className="flex items-center gap-3 ml-4 pl-4 border-l border-slate-700">
@@ -536,7 +584,9 @@ export default function Header() {
                       d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
                     />
                   </svg>
-                  <span className="text-sm font-medium text-white">{user.username}</span>
+                  <span className="text-sm font-medium text-white">
+                    {user.username}
+                  </span>
                 </div>
                 <button
                   onClick={handleSignOut}
@@ -592,13 +642,13 @@ export default function Header() {
           }`}
         >
           <div className="flex flex-col gap-1 pt-2">
-            {navItems.map((item) => (
+            {navItems.map((item) =>
               item.hasDropdown ? (
                 <div key={item.path}>
                   <button
                     onClick={() => setIsHakkimizdaOpen(!isHakkimizdaOpen)}
                     className={`w-full flex items-center justify-between px-4 py-3 rounded-lg text-sm font-medium transition-all duration-300 ${
-                      pathname === item.path || pathname === '/kurumsal'
+                      pathname === item.path || pathname === "/kurumsal"
                         ? "bg-cyan-500/10 text-cyan-400 border-l-2 border-cyan-400"
                         : "text-slate-300 hover:bg-slate-800 hover:text-white"
                     }`}
@@ -606,13 +656,18 @@ export default function Header() {
                     <span>{item.name}</span>
                     <svg
                       className={`w-4 h-4 transition-transform duration-200 ${
-                        isHakkimizdaOpen ? 'rotate-180' : ''
+                        isHakkimizdaOpen ? "rotate-180" : ""
                       }`}
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
                     >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 9l-7 7-7-7"
+                      />
                     </svg>
                   </button>
                   {isHakkimizdaOpen && (
@@ -640,7 +695,7 @@ export default function Header() {
                   <button
                     onClick={() => setIsServicesOpen(!isServicesOpen)}
                     className={`w-full flex items-center justify-between px-4 py-3 rounded-lg text-sm font-medium transition-all duration-300 ${
-                      pathname.startsWith('/hizmetlerimiz')
+                      pathname.startsWith("/hizmetlerimiz")
                         ? "bg-cyan-500/10 text-cyan-400 border-l-2 border-cyan-400"
                         : "text-slate-300 hover:bg-slate-800 hover:text-white"
                     }`}
@@ -649,13 +704,18 @@ export default function Header() {
                     {serviceMenus.length > 0 && (
                       <svg
                         className={`w-4 h-4 transition-transform duration-200 ${
-                          isServicesOpen ? 'rotate-180' : ''
+                          isServicesOpen ? "rotate-180" : ""
                         }`}
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
                       >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 9l-7 7-7-7"
+                        />
                       </svg>
                     )}
                   </button>
@@ -664,7 +724,11 @@ export default function Header() {
                       {serviceMenus.map((menu) => (
                         <div key={menu.id}>
                           <button
-                            onClick={() => setActiveServiceMenu(activeServiceMenu === menu.id ? null : menu.id)}
+                            onClick={() =>
+                              setActiveServiceMenu(
+                                activeServiceMenu === menu.id ? null : menu.id
+                              )
+                            }
                             className={`w-full flex items-center justify-between px-4 py-2 rounded-lg text-sm transition-all duration-300 ${
                               activeServiceMenu === menu.id
                                 ? "bg-cyan-500/10 text-cyan-400"
@@ -675,30 +739,41 @@ export default function Header() {
                             {menu.pages && menu.pages.length > 0 && (
                               <svg
                                 className={`w-4 h-4 transition-transform duration-200 ${
-                                  activeServiceMenu === menu.id ? 'rotate-180' : ''
+                                  activeServiceMenu === menu.id
+                                    ? "rotate-180"
+                                    : ""
                                 }`}
                                 fill="none"
                                 stroke="currentColor"
                                 viewBox="0 0 24 24"
                               >
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M19 9l-7 7-7-7"
+                                />
                               </svg>
                             )}
                           </button>
-                          {activeServiceMenu === menu.id && menu.pages && menu.pages.length > 0 && (
-                            <div className="ml-4 mt-1 space-y-1">
-                              {menu.pages.filter(page => page.active).map((page) => (
-                                <Link
-                                  key={page.id}
-                                  href={`/hizmetlerimiz/${menu.id}/${page.id}`}
-                                  onClick={() => setIsMenuOpen(false)}
-                                  className="block px-4 py-2 rounded-lg text-sm text-slate-400 hover:bg-slate-800 hover:text-white transition-all duration-300"
-                                >
-                                  {page.title}
-                                </Link>
-                              ))}
-                            </div>
-                          )}
+                          {activeServiceMenu === menu.id &&
+                            menu.pages &&
+                            menu.pages.length > 0 && (
+                              <div className="ml-4 mt-1 space-y-1">
+                                {menu.pages
+                                  .filter((page) => page.active)
+                                  .map((page) => (
+                                    <Link
+                                      key={page.id}
+                                      href={`/hizmetlerimiz/${menu.id}/${page.id}`}
+                                      onClick={() => setIsMenuOpen(false)}
+                                      className="block px-4 py-2 rounded-lg text-sm text-slate-400 hover:bg-slate-800 hover:text-white transition-all duration-300"
+                                    >
+                                      {page.title}
+                                    </Link>
+                                  ))}
+                              </div>
+                            )}
                         </div>
                       ))}
                     </div>
@@ -718,8 +793,8 @@ export default function Header() {
                   {item.name}
                 </Link>
               )
-            ))}
-            
+            )}
+
             {/* Mobile Admin Menu */}
             {user && user.role === "ADMIN" && (
               <div className="border-t border-slate-700 mt-2 pt-2">
@@ -746,7 +821,7 @@ export default function Header() {
                   </svg>
                   Kullanıcı Yönetimi
                 </Link>
-                
+
                 <div className="px-4 py-2 text-xs font-semibold text-slate-500 uppercase tracking-wider mt-2">
                   Menü Yönetimi
                 </div>
@@ -755,8 +830,18 @@ export default function Header() {
                   onClick={() => setIsMenuOpen(false)}
                   className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white transition-all duration-300"
                 >
-                  <svg className="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  <svg
+                    className="w-5 h-5 text-cyan-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                    />
                   </svg>
                   Hizmetler
                 </Link>
@@ -765,8 +850,18 @@ export default function Header() {
                   onClick={() => setIsMenuOpen(false)}
                   className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white transition-all duration-300"
                 >
-                  <svg className="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  <svg
+                    className="w-5 h-5 text-cyan-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
                   </svg>
                   Hakkımızda
                 </Link>
@@ -775,14 +870,24 @@ export default function Header() {
                   onClick={() => setIsMenuOpen(false)}
                   className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-800 hover:text-white transition-all duration-300"
                 >
-                  <svg className="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                  <svg
+                    className="w-5 h-5 text-cyan-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                    />
                   </svg>
                   İlanlar
                 </Link>
               </div>
             )}
-            
+
             {/* Mobile User Section */}
             {user ? (
               <>
@@ -801,7 +906,9 @@ export default function Header() {
                         d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
                       />
                     </svg>
-                    <span className="text-sm font-medium text-white">{user.username}</span>
+                    <span className="text-sm font-medium text-white">
+                      {user.username}
+                    </span>
                   </div>
                   <button
                     onClick={handleSignOut}

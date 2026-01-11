@@ -1,60 +1,74 @@
 import Link from "next/link";
 
+export const metadata = {
+  title: "Güvenlik Kamera Sistemleri Hizmetleri | IP Kamera Kurulumu",
+  description: "Profesyonel güvenlik kamerası kurulumu, IP kamera sistemleri, CCTV, NVR/DVR kayıt cihazları, mobil izleme ve 7/24 teknik destek hizmetleri. Ücretsiz keşif için arayın!",
+  keywords: "güvenlik kamerası kurulumu, IP kamera sistemleri, CCTV kurulumu, NVR kurulumu, DVR kurulumu, mobil izleme, gece görüşlü kamera, dome kamera, bullet kamera, PTZ kamera",
+  alternates: {
+    canonical: "https://sutechvision.com/hizmetlerimiz",
+  },
+  openGraph: {
+    title: "Güvenlik Kamera Sistemleri Hizmetleri | SU Tech Vision",
+    description: "Profesyonel güvenlik kamerası kurulumu ve IP kamera sistemleri hizmetleri.",
+    url: "https://sutechvision.com/hizmetlerimiz",
+  },
+};
+
 const services = [
   {
-    icon: "🌐",
-    title: "Web Geliştirme",
-    description: "Modern, hızlı ve SEO uyumlu web siteleri geliştiriyoruz. React, Next.js, Vue.js gibi güncel teknolojilerle projelerinizi hayata geçiriyoruz.",
-    features: ["Responsive Tasarım", "SEO Optimizasyonu", "Hızlı Yükleme", "CMS Entegrasyonu"],
+    icon: "📹",
+    title: "IP Kamera Sistemleri",
+    description: "Yüksek çözünürlüklü IP kamera kurulumu. 2MP, 4MP, 4K ve 8MP seçenekleriyle kristal netliğinde görüntü kalitesi. PoE destekli kolay kurulum.",
+    features: ["4K Ultra HD", "PoE Destekli", "H.265 Sıkıştırma", "Geniş Açı Lens"],
     color: "from-cyan-400 to-blue-500",
   },
   {
-    icon: "📱",
-    title: "Mobil Uygulama",
-    description: "iOS ve Android platformları için native ve cross-platform mobil uygulamalar geliştiriyoruz. React Native ve Flutter ile hızlı çözümler sunuyoruz.",
-    features: ["iOS & Android", "Cross-Platform", "Push Bildirimler", "Offline Mod"],
+    icon: "🎥",
+    title: "CCTV Kamera Kurulumu",
+    description: "Profesyonel CCTV kamera sistemi kurulumu. Analog HD, TVI, AHD ve CVI formatlarında yüksek kaliteli görüntü kayıt çözümleri.",
+    features: ["Dome Kamera", "Bullet Kamera", "PTZ Kamera", "Vandal-Proof"],
     color: "from-blue-400 to-purple-500",
   },
   {
-    icon: "🎨",
-    title: "UI/UX Tasarım",
-    description: "Kullanıcı deneyimini ön planda tutan, estetik ve fonksiyonel arayüz tasarımları oluşturuyoruz.",
-    features: ["Kullanıcı Araştırması", "Wireframe & Prototip", "Görsel Tasarım", "Usability Testing"],
+    icon: "💾",
+    title: "NVR / DVR Kayıt Cihazları",
+    description: "Network Video Recorder (NVR) ve Digital Video Recorder (DVR) kurulumu. 30 güne kadar kesintisiz kayıt ve kolay erişim.",
+    features: ["30 Gün Kayıt", "RAID Desteği", "Uzaktan Erişim", "Akıllı Arama"],
     color: "from-purple-400 to-pink-500",
   },
   {
-    icon: "☁️",
-    title: "Bulut Çözümleri",
-    description: "AWS, Google Cloud ve Azure altyapılarında ölçeklenebilir ve güvenli bulut çözümleri sunuyoruz.",
-    features: ["Bulut Migrasyon", "DevOps & CI/CD", "Konteynerizasyon", "Sunucu Yönetimi"],
+    icon: "📱",
+    title: "Mobil İzleme Sistemi",
+    description: "Akıllı telefonunuzdan 7/24 canlı izleme. iOS ve Android uyumlu uygulamalarla her yerden güvenlik kontrolü.",
+    features: ["iOS & Android", "Canlı İzleme", "Anlık Bildirim", "Çoklu Kamera"],
     color: "from-pink-400 to-red-500",
   },
   {
-    icon: "🔒",
-    title: "Siber Güvenlik",
-    description: "İşletmenizi siber tehditlere karşı koruyoruz. Penetrasyon testleri ve güvenlik denetimleri yapıyoruz.",
-    features: ["Güvenlik Denetimi", "Penetrasyon Testi", "Firewall Kurulumu", "Eğitim & Farkındalık"],
+    icon: "🌙",
+    title: "Gece Görüşlü Kameralar",
+    description: "IR LED teknolojisi ile karanlıkta 50 metreye kadar net görüntü. Starlight ve renkli gece görüşü seçenekleri.",
+    features: ["50m IR Mesafe", "Starlight", "Renkli Gece Görüşü", "WDR Teknolojisi"],
     color: "from-red-400 to-orange-500",
   },
   {
-    icon: "📊",
-    title: "Veri Analitiği",
-    description: "Verilerinizi anlamlı içgörülere dönüştürüyoruz. İş zekası ve raporlama çözümleri sunuyoruz.",
-    features: ["Veri Görselleştirme", "Dashboard & Raporlama", "Tahminsel Analitik", "Big Data"],
+    icon: "🤖",
+    title: "Yapay Zeka Kamera Sistemleri",
+    description: "Akıllı video analizi ile hareket algılama, yüz tanıma, plaka okuma ve nesne tespiti özellikleri.",
+    features: ["Yüz Tanıma", "Plaka Okuma", "Hareket Algılama", "Nesne Takibi"],
     color: "from-orange-400 to-yellow-500",
   },
   {
-    icon: "🤖",
-    title: "Yapay Zeka & ML",
-    description: "Makine öğrenimi ve yapay zeka çözümleriyle iş süreçlerinizi otomatikleştiriyoruz.",
-    features: ["Chatbot Geliştirme", "Görüntü İşleme", "Doğal Dil İşleme", "Öngörücü Modeller"],
+    icon: "🏠",
+    title: "Ev Güvenlik Sistemleri",
+    description: "Evler için özel güvenlik kamerası paketleri. Kablosuz WiFi kameralar ve kolay kurulum seçenekleri.",
+    features: ["WiFi Kamera", "Kablosuz Sistem", "Kolay Kurulum", "Bulut Kayıt"],
     color: "from-yellow-400 to-green-500",
   },
   {
-    icon: "🛒",
-    title: "E-Ticaret Çözümleri",
-    description: "Online satış platformları kuruyoruz. Ödeme entegrasyonları ve stok yönetimi dahil.",
-    features: ["Mağaza Kurulumu", "Ödeme Entegrasyonu", "Stok Yönetimi", "Pazaryeri Entegrasyonu"],
+    icon: "🏢",
+    title: "İşyeri Güvenlik Çözümleri",
+    description: "Mağaza, ofis, fabrika ve plaza için kapsamlı güvenlik sistemleri. Çoklu kamera yönetimi ve merkezi izleme.",
+    features: ["Merkezi İzleme", "Çoklu Lokasyon", "Entegre Sistem", "Erişim Kontrolü"],
     color: "from-green-400 to-cyan-500",
   },
 ];
@@ -71,13 +85,13 @@ export default function Hizmetlerimiz() {
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto">
             <span className="inline-block px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/30 text-blue-400 text-sm font-medium mb-6">
-              Hizmetlerimiz
+              Güvenlik Kamera Sistemleri Hizmetlerimiz
             </span>
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6">
-              Ne <span className="gradient-text">Yapıyoruz?</span>
+              Profesyonel <span className="gradient-text">Güvenlik Çözümleri</span>
             </h1>
             <p className="text-xl text-slate-400">
-              Dijital dönüşüm yolculuğunuzda ihtiyacınız olan tüm teknoloji hizmetlerini tek çatı altında sunuyoruz.
+              IP kamera sistemleri, CCTV kurulumu, NVR/DVR kayıt cihazları ve 7/24 izleme hizmetleriyle güvenliğinizi sağlıyoruz.
             </p>
           </div>
         </div>
@@ -116,24 +130,24 @@ export default function Hizmetlerimiz() {
       <section className="section-padding">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <span className="text-cyan-400 text-sm font-semibold tracking-wider uppercase">Süreç</span>
+            <span className="text-cyan-400 text-sm font-semibold tracking-wider uppercase">Kurulum Süreci</span>
             <h2 className="text-4xl font-bold text-white mt-4 mb-6">
-              Nasıl <span className="gradient-text">Çalışıyoruz?</span>
+              Güvenlik Kamerası <span className="gradient-text">Kurulum Adımları</span>
             </h2>
             <p className="text-slate-400 max-w-2xl mx-auto">
-              Projelerinizi başarıyla tamamlamak için izlediğimiz adımlar
+              Profesyonel güvenlik kamerası kurulumunda izlediğimiz adımlar
             </p>
           </div>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
             {[
-              { step: "01", title: "Analiz", desc: "İhtiyaçlarınızı dinliyor, hedeflerinizi anlıyoruz" },
-              { step: "02", title: "Planlama", desc: "Detaylı proje planı ve zaman çizelgesi oluşturuyoruz" },
-              { step: "03", title: "Geliştirme", desc: "Agile metodoloji ile projenizi geliştiriyoruz" },
-              { step: "04", title: "Teslimat", desc: "Test edip, eğitim vererek projeyi teslim ediyoruz" },
+              { step: "01", title: "Ücretsiz Keşif", desc: "Mekanınızı ziyaret ediyor, güvenlik ihtiyaçlarınızı belirliyoruz" },
+              { step: "02", title: "Proje & Teklif", desc: "Size özel kamera yerleşim planı ve fiyat teklifi sunuyoruz" },
+              { step: "03", title: "Kurulum", desc: "Uzman ekibimiz kamera ve kayıt sistemlerini kuruyor" },
+              { step: "04", title: "Eğitim & Destek", desc: "Sistem kullanımını öğretiyor, 7/24 destek sağlıyoruz" },
             ].map((item, index) => (
               <div key={index} className="relative">
-                <div className="glass rounded-2xl p-8 text-center card-hover">
+                <article className="glass rounded-2xl p-8 text-center card-hover">
                   <div className="text-6xl font-black gradient-text opacity-20 absolute top-4 right-4">
                     {item.step}
                   </div>
@@ -142,7 +156,7 @@ export default function Hizmetlerimiz() {
                   </div>
                   <h3 className="text-xl font-semibold text-white mb-3">{item.title}</h3>
                   <p className="text-slate-400 text-sm">{item.desc}</p>
-                </div>
+                </article>
                 {index < 3 && (
                   <div className="hidden lg:block absolute top-1/2 -right-4 w-8 text-cyan-500/30">
                     →
@@ -154,25 +168,28 @@ export default function Hizmetlerimiz() {
         </div>
       </section>
 
-      {/* Technologies */}
+      {/* Brands & Technologies */}
       <section className="section-padding bg-slate-900/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <span className="text-cyan-400 text-sm font-semibold tracking-wider uppercase">Teknolojiler</span>
+            <span className="text-cyan-400 text-sm font-semibold tracking-wider uppercase">Markalar</span>
             <h2 className="text-4xl font-bold text-white mt-4 mb-6">
-              Kullandığımız <span className="gradient-text">Teknolojiler</span>
+              Çalıştığımız <span className="gradient-text">Güvenlik Kamerası Markaları</span>
             </h2>
+            <p className="text-slate-400 max-w-2xl mx-auto">
+              Dünya genelinde güvenilir güvenlik kamerası ve IP kamera markalarının yetkili satıcısı ve kurulumcusuyuz.
+            </p>
           </div>
 
           <div className="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 gap-4">
             {[
-              "React", "Next.js", "Vue.js", "Angular",
-              "Node.js", "Python", "Java", "Go",
-              "PostgreSQL", "MongoDB", "Redis", "AWS",
-              "Docker", "Kubernetes", "GraphQL", "TypeScript",
-            ].map((tech, index) => (
+              "Hikvision", "Dahua", "Uniview", "Hanwha",
+              "Axis", "Bosch", "Panasonic", "Sony",
+              "Vivotek", "Honeywell", "Pelco", "IDIS",
+              "Milesight", "TVT", "Reolink", "Ezviz",
+            ].map((brand, index) => (
               <div key={index} className="glass rounded-xl p-4 text-center card-hover">
-                <span className="text-slate-300 text-sm font-medium">{tech}</span>
+                <span className="text-slate-300 text-sm font-medium">{brand}</span>
               </div>
             ))}
           </div>
@@ -185,14 +202,23 @@ export default function Hizmetlerimiz() {
           <div className="glass rounded-3xl p-12 relative overflow-hidden">
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500"></div>
             <h2 className="text-3xl font-bold text-white mb-4">
-              Projeniz İçin <span className="gradient-text">Teklif Alın</span>
+              Güvenlik Kamerası Kurulumu İçin <span className="gradient-text">Ücretsiz Keşif</span>
             </h2>
             <p className="text-slate-400 mb-8">
-              Hizmetlerimiz hakkında detaylı bilgi almak ve projeniz için ücretsiz teklif almak için bizimle iletişime geçin.
+              IP kamera sistemleri ve CCTV kurulumu için ücretsiz keşif hizmeti alın. 
+              Uzman ekibimiz mekanınıza en uygun güvenlik kamerası çözümünü belirleyecek.
             </p>
-            <Link href="/iletisim" className="btn-primary inline-block">
-              Ücretsiz Teklif Alın
-            </Link>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link href="/iletisim" className="btn-primary inline-block">
+                Ücretsiz Keşif İsteyin
+              </Link>
+              <a href="tel:+90XXXXXXXXXX" className="btn-secondary inline-flex items-center justify-center gap-2">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                </svg>
+                Hemen Arayın
+              </a>
+            </div>
           </div>
         </div>
       </section>
