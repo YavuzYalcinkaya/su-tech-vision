@@ -179,7 +179,7 @@ class ServiceMenuService {
    * Create a new service menu with images
    * @param {Object} menuData - Menu data { title, description, active }
    * @param {File} image - Main image file
-   * @param {File[]} additionalImages - Additional image files (imageUrl1-4)
+   * @param {File[]} additionalImages - Additional image files (imageUrl1-5)
    * @returns {Promise<Object>} Created service menu
    */
   async createServiceMenu(menuData, image, additionalImages = []) {
@@ -192,26 +192,33 @@ class ServiceMenuService {
 
       const formData = new FormData();
       
-      // Add menu data as JSON string
-      formData.append('menu', JSON.stringify({
+      // Add menu data as JSON string with correct content type
+      const menuBlob = new Blob([JSON.stringify({
         title: menuData.title,
         description: menuData.description,
         active: menuData.active
-      }));
+      })], { type: 'application/json' });
+      formData.append('menu', menuBlob);
       
-      // Add main image if provided
+      // Add main image if provided - create new File with correct type
       if (image) {
-        formData.append('image', image);
+        const imageType = image.type || 'image/jpeg';
+        const fileName = image.name || 'image.jpg';
+        const newFile = new File([image], fileName, { type: imageType });
+        formData.append('image', newFile);
       }
       
-      // Add additional images (imageUrl1, imageUrl2, imageUrl3, imageUrl4)
+      // Add additional images (imageUrl1, imageUrl2, imageUrl3, imageUrl4, imageUrl5)
       additionalImages.forEach((img, index) => {
-        if (img) {
-          formData.append(`imageUrl${index + 1}`, img);
+        if (img && index < 5) {
+          const imgType = img.type || 'image/jpeg';
+          const fileName = img.name || `image${index + 1}.jpg`;
+          const newFile = new File([img], fileName, { type: imgType });
+          formData.append(`imageUrl${index + 1}`, newFile);
         }
       });
 
-      console.log('formData', formData);
+      console.log('Creating service menu with FormData');
 
       const response = await fetch(`${API_BASE_URL}/internal/service-menus`, {
         method: 'POST',
@@ -221,7 +228,7 @@ class ServiceMenuService {
         body: formData,
       });
 
-      console.log('response', response);
+      console.log('Response status:', response.status);
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
@@ -246,7 +253,7 @@ class ServiceMenuService {
    * @param {number} menuId - Menu ID to add the page to
    * @param {Object} pageData - Page data { title, description, active }
    * @param {File} image - Main image file
-   * @param {File[]} additionalImages - Additional image files (imageUrl1-4)
+   * @param {File[]} additionalImages - Additional image files (imageUrl1-5)
    * @returns {Promise<Object>} Created service page
    */
   async createServicePage(menuId, pageData, image, additionalImages = []) {
@@ -259,24 +266,33 @@ class ServiceMenuService {
 
       const formData = new FormData();
       
-      // Add page data as JSON string
-      formData.append('menu', JSON.stringify({
+      // Add page data as JSON string with correct content type
+      const menuBlob = new Blob([JSON.stringify({
         title: pageData.title,
         description: pageData.description,
         active: pageData.active
-      }));
+      })], { type: 'application/json' });
+      formData.append('menu', menuBlob);
       
-      // Add main image if provided
+      // Add main image if provided - create new File with correct type
       if (image) {
-        formData.append('image', image);
+        const imageType = image.type || 'image/jpeg';
+        const fileName = image.name || 'image.jpg';
+        const newFile = new File([image], fileName, { type: imageType });
+        formData.append('image', newFile);
       }
       
-      // Add additional images (imageUrl1, imageUrl2, imageUrl3, imageUrl4)
+      // Add additional images (imageUrl1, imageUrl2, imageUrl3, imageUrl4, imageUrl5)
       additionalImages.forEach((img, index) => {
-        if (img) {
-          formData.append(`imageUrl${index + 1}`, img);
+        if (img && index < 5) {
+          const imgType = img.type || 'image/jpeg';
+          const fileName = img.name || `image${index + 1}.jpg`;
+          const newFile = new File([img], fileName, { type: imgType });
+          formData.append(`imageUrl${index + 1}`, newFile);
         }
       });
+
+      console.log('Creating service page with FormData');
 
       const response = await fetch(`${API_BASE_URL}/internal/service-pages/menu/${menuId}`, {
         method: 'POST',
@@ -285,6 +301,8 @@ class ServiceMenuService {
         },
         body: formData,
       });
+
+      console.log('Response status:', response.status);
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));

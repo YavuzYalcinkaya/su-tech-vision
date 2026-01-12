@@ -29,6 +29,7 @@ export default function HizmetlerYonetimiPage() {
     imageUrl2: null,
     imageUrl3: null,
     imageUrl4: null,
+    imageUrl5: null,
   });
   
   // Image previews
@@ -38,6 +39,7 @@ export default function HizmetlerYonetimiPage() {
     imageUrl2: null,
     imageUrl3: null,
     imageUrl4: null,
+    imageUrl5: null,
   });
 
   // Create page form state
@@ -50,6 +52,7 @@ export default function HizmetlerYonetimiPage() {
     imageUrl2: null,
     imageUrl3: null,
     imageUrl4: null,
+    imageUrl5: null,
   });
   
   // Page image previews
@@ -59,6 +62,7 @@ export default function HizmetlerYonetimiPage() {
     imageUrl2: null,
     imageUrl3: null,
     imageUrl4: null,
+    imageUrl5: null,
   });
 
   const showToast = (message, type = "success") => {
@@ -140,6 +144,7 @@ const handleUpdate = async () => {
       imageUrl2: null,
       imageUrl3: null,
       imageUrl4: null,
+      imageUrl5: null,
     });
     // Clean up preview URLs
     Object.values(imagePreviews).forEach(url => {
@@ -151,6 +156,7 @@ const handleUpdate = async () => {
       imageUrl2: null,
       imageUrl3: null,
       imageUrl4: null,
+      imageUrl5: null,
     });
   };
 
@@ -173,6 +179,7 @@ const handleUpdate = async () => {
         createForm.imageUrl2,
         createForm.imageUrl3,
         createForm.imageUrl4,
+        createForm.imageUrl5,
       ];
       
       await serviceMenuService.createServiceMenu(menuData, createForm.image, additionalImages);
@@ -215,6 +222,7 @@ const handleUpdate = async () => {
       imageUrl2: null,
       imageUrl3: null,
       imageUrl4: null,
+      imageUrl5: null,
     });
     Object.values(pageImagePreviews).forEach(url => {
       if (url) URL.revokeObjectURL(url);
@@ -225,6 +233,7 @@ const handleUpdate = async () => {
       imageUrl2: null,
       imageUrl3: null,
       imageUrl4: null,
+      imageUrl5: null,
     });
   };
 
@@ -247,6 +256,7 @@ const handleUpdate = async () => {
         createPageForm.imageUrl2,
         createPageForm.imageUrl3,
         createPageForm.imageUrl4,
+        createPageForm.imageUrl5,
       ];
 
       await serviceMenuService.createServicePage(createPageModal.menuId, pageData, createPageForm.image, additionalImages);
@@ -848,8 +858,8 @@ const handleUpdate = async () => {
               {/* Additional Images */}
               <div>
                 <label className="block text-sm font-medium text-slate-300 mb-2">Ek Görseller</label>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  {['imageUrl1', 'imageUrl2', 'imageUrl3', 'imageUrl4'].map((field, index) => (
+                <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                  {['imageUrl1', 'imageUrl2', 'imageUrl3', 'imageUrl4', 'imageUrl5'].map((field, index) => (
                     <div key={field} className="border-2 border-dashed border-slate-700 rounded-xl p-2 hover:border-cyan-500/50 transition-colors">
                       {imagePreviews[field] ? (
                         <div className="relative">
@@ -1013,8 +1023,8 @@ const handleUpdate = async () => {
               {/* Additional Images */}
               <div>
                 <label className="block text-sm font-medium text-slate-300 mb-2">Ek Görseller</label>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  {['imageUrl1', 'imageUrl2', 'imageUrl3', 'imageUrl4'].map((field, index) => (
+                <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                  {['imageUrl1', 'imageUrl2', 'imageUrl3', 'imageUrl4', 'imageUrl5'].map((field, index) => (
                     <div key={field} className="border-2 border-dashed border-slate-700 rounded-xl p-2 hover:border-green-500/50 transition-colors">
                       {pageImagePreviews[field] ? (
                         <div className="relative">
