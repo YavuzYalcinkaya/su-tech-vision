@@ -173,7 +173,7 @@ export default function Referanslar() {
           <div className="grid md:grid-cols-3 gap-8">
             {testimonials.map((testimonial, index) => (
               <div key={index} className="glass rounded-3xl p-8 card-hover">
-                <div className="text-4xl text-cyan-400 mb-4">"</div>
+                <div className="text-4xl text-cyan-400 mb-4">&quot;</div>
                 <p className="text-slate-300 mb-6 italic">{testimonial.quote}</p>
                 <div className="flex items-center gap-4">
                   <div className={`w-12 h-12 rounded-full bg-gradient-to-br ${testimonial.color} flex items-center justify-center text-white font-bold`}>
