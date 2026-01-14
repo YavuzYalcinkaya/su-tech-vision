@@ -7,8 +7,9 @@ import authService from "../services/authService";
 export default function SignUpPage() {
   const router = useRouter();
   const [formData, setFormData] = useState({
-    username: "",
+    name: "",
     surname: "",
+    username: "",
     email: "",
     phone: "",
     password: "",
@@ -36,6 +37,7 @@ export default function SignUpPage() {
     try {
       // Prepare data for API
       const userData = {
+        name: formData.name,
         surname: formData.surname,
         username: formData.username,
         password: formData.password,
@@ -108,15 +110,15 @@ export default function SignUpPage() {
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Name Fields - Side by Side */}
+            {/* Name & Surname Fields - Side by Side */}
             <div className="grid sm:grid-cols-2 gap-6">
-              {/* Username */}
+              {/* Name */}
               <div>
                 <label
-                  htmlFor="username"
+                  htmlFor="name"
                   className="block text-sm font-medium text-slate-300 mb-2"
                 >
-                  Kullanıcı Adı
+                  Ad
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -136,14 +138,14 @@ export default function SignUpPage() {
                   </div>
                   <input
                     type="text"
-                    id="username"
-                    name="username"
-                    value={formData.username}
+                    id="name"
+                    name="name"
+                    value={formData.name}
                     onChange={handleChange}
                     required
                     disabled={isLoading}
                     className="w-full pl-12 pr-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                    placeholder="Kullanıcı adınız"
+                    placeholder="Adınız"
                   />
                 </div>
               </div>
@@ -184,6 +186,44 @@ export default function SignUpPage() {
                     placeholder="Soyadınız"
                   />
                 </div>
+              </div>
+            </div>
+
+            {/* Username Field */}
+            <div>
+              <label
+                htmlFor="username"
+                className="block text-sm font-medium text-slate-300 mb-2"
+              >
+                Kullanıcı Adı
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <svg
+                    className="w-5 h-5 text-slate-400"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                </div>
+                <input
+                  type="text"
+                  id="username"
+                  name="username"
+                  value={formData.username}
+                  onChange={handleChange}
+                  required
+                  disabled={isLoading}
+                  className="w-full pl-12 pr-4 py-3 bg-slate-800/50 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  placeholder="Kullanıcı adınız"
+                />
               </div>
             </div>
 
