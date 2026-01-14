@@ -4,7 +4,7 @@ const nextConfig = {
     return [
       {
         source: '/api/:path*',
-        destination: 'sutechvision-production.up.railway.app/api/:path*',
+        destination: 'https://sutechvision-production.up.railway.app/api/:path*',
       },
     ];
   },
