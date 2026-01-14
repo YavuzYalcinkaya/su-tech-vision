@@ -45,7 +45,7 @@ export default function PageTransition({ children }) {
     }, 200);
 
     return () => clearTimeout(timer);
-  }, [pathname, searchParams]);
+  }, [pathname, searchParams, children, handleRouteChangeStart, handleRouteChangeEnd]);
 
   // İlk yüklemede doğrudan göster
   useEffect(() => {

@@ -33,7 +33,7 @@ export default function Kurumsal() {
               </h2>
               <div className="space-y-4 text-slate-400">
                 <p>
-                  SU Tech Vision, 2014 yılında İstanbul'da kurulmuş olup, yazılım geliştirme, web tasarım, 
+                  SU Tech Vision, 2014 yılında İstanbul&apos;da kurulmuş olup, yazılım geliştirme, web tasarım, 
                   mobil uygulama geliştirme ve dijital pazarlama alanlarında hizmet vermektedir.
                 </p>
                 <p>
