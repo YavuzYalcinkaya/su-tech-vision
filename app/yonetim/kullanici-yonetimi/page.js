@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import userService from "../../services/userService";
 import Toast from "../../components/Toast";
@@ -38,6 +38,20 @@ export default function KullaniciYonetimiPage() {
     });
   };
 
+  const fetchUsers = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const userData = await userService.getAllUsers();
+      setUsers(userData);
+      setError("");
+    } catch (err) {
+      setError(err.message || 'Kullanıcılar yüklenirken bir hata oluştu');
+      console.error('Fetch users error:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     // Check if user is admin
     const checkAdminAndFetchUsers = async () => {
@@ -62,21 +76,7 @@ export default function KullaniciYonetimiPage() {
     };
 
     checkAdminAndFetchUsers();
-  }, [router]);
-
-  const fetchUsers = async () => {
-    try {
-      setIsLoading(true);
-      const userData = await userService.getAllUsers();
-      setUsers(userData);
-      setError("");
-    } catch (err) {
-      setError(err.message || 'Kullanıcılar yüklenirken bir hata oluştu');
-      console.error('Fetch users error:', err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  }, [router, fetchUsers]);
 
   const handleEditClick = (user) => {
     setEditingUser({

@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Toast from "../../../components/Toast";
 import serviceMenuService from "../../../services/serviceMenuService";
@@ -77,11 +77,11 @@ const handleDelete = async () => {
       if (deleteModal.type === 'menu') {
         // Delete menu - DELETE /internal/service-menus/{id}
         await serviceMenuService.deleteServiceMenu(deleteModal.id);
-        showToast(`"${deleteModal.title}" menüsü başarıyla silindi`, 'success');
+        showToast(`&quot;${deleteModal.title}&quot; menüsü başarıyla silindi`, 'success');
       } else {
         // Delete page - DELETE /internal/service-pages/{id}
         await serviceMenuService.deleteServicePage(deleteModal.id);
-        showToast(`"${deleteModal.title}" alt sayfası başarıyla silindi`, 'success');
+        showToast(`&quot;${deleteModal.title}&quot; alt sayfası başarıyla silindi`, 'success');
       }
       setDeleteModal({ isOpen: false, id: null, title: '', type: '' });
       fetchServices();
@@ -101,11 +101,11 @@ const handleUpdate = async () => {
       if (updateModal.type === 'menu') {
         // Update menu - PUT /internal/service-menus/{id}
         await serviceMenuService.updateServiceMenu(updateModal.id, updateModal.data);
-        showToast(`"${updateModal.data.title}" menüsü başarıyla güncellendi`, 'success');
+        showToast(`&quot;${updateModal.data.title}&quot; menüsü başarıyla güncellendi`, 'success');
       } else {
         // Update page - PUT /internal/service-pages/{id}
         await serviceMenuService.updateServicePage(updateModal.id, updateModal.data);
-        showToast(`"${updateModal.data.title}" alt sayfası başarıyla güncellendi`, 'success');
+        showToast(`&quot;${updateModal.data.title}&quot; alt sayfası başarıyla güncellendi`, 'success');
       }
       setUpdateModal({ isOpen: false, id: null, data: null, type: '' });
       fetchServices();
@@ -183,7 +183,7 @@ const handleUpdate = async () => {
       ];
       
       await serviceMenuService.createServiceMenu(menuData, createForm.image, additionalImages);
-      showToast(`"${createForm.title}" başarıyla oluşturuldu`, 'success');
+      showToast(`&quot;${createForm.title}&quot; başarıyla oluşturuldu`, 'success');
       setCreateModal({ isOpen: false });
       resetCreateForm();
       fetchServices();
@@ -260,7 +260,7 @@ const handleUpdate = async () => {
       ];
 
       await serviceMenuService.createServicePage(createPageModal.menuId, pageData, createPageForm.image, additionalImages);
-      showToast(`"${createPageForm.title}" alt sayfası başarıyla oluşturuldu`, 'success');
+      showToast(`&quot;${createPageForm.title}&quot; alt sayfası başarıyla oluşturuldu`, 'success');
       setCreatePageModal({ isOpen: false, menuId: null, menuTitle: '' });
       resetCreatePageForm();
       fetchServices();
@@ -287,6 +287,19 @@ const handleUpdate = async () => {
     setUpdateModal({ isOpen: true, id, data: { ...data }, type });
   };
 
+  const fetchServices = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const data = await serviceMenuService.getServiceMenusWithPages();
+      setServices(data);
+    } catch (error) {
+      console.error('Failed to fetch services:', error);
+      showToast(error.message || 'Hizmetler yüklenirken bir hata oluştu', 'error');
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     const checkAdmin = () => {
       if (typeof window !== 'undefined') {
@@ -310,20 +323,7 @@ const handleUpdate = async () => {
     if (checkAdmin()) {
       fetchServices();
     }
-  }, [router]);
-
-  const fetchServices = async () => {
-    try {
-      setIsLoading(true);
-      const data = await serviceMenuService.getServiceMenusWithPages();
-      setServices(data);
-    } catch (error) {
-      console.error('Failed to fetch services:', error);
-      showToast(error.message || 'Hizmetler yüklenirken bir hata oluştu', 'error');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  }, [router, fetchServices]);
 
   const toggleMenu = (menuId) => {
     setExpandedMenus(prev => ({
@@ -618,7 +618,7 @@ const handleUpdate = async () => {
               </div>
             </div>
             <p className="text-slate-300 mb-6">
-              <span className="font-semibold text-white">&quot;{deleteModal.title}&quot;</span> {deleteModal.type === 'menu' ? 'menüsünü' : 'sayfasını'} silmek istediğinizden emin misiniz?
+              <span className="font-semibold text-white">{deleteModal.title}</span> {deleteModal.type === 'menu' ? 'menüsünü' : 'sayfasını'} silmek istediğinizden emin misiniz?
             </p>
             <div className="flex gap-3">
               <button
@@ -941,7 +941,7 @@ const handleUpdate = async () => {
               </div>
               <div>
                 <h3 className="text-xl font-bold text-white">Alt Sayfa Ekle</h3>
-                <p className="text-slate-400 text-sm">&quot;{createPageModal.menuTitle}&quot; menüsüne alt sayfa ekleyin</p>
+                <p className="text-slate-400 text-sm">{createPageModal.menuTitle} menüsüne alt sayfa ekleyin</p>
               </div>
             </div>
             

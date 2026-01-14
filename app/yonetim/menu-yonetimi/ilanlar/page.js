@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Toast from "../../../components/Toast";
 import ConfirmDialog from "../../../components/ConfirmDialog";
@@ -44,6 +44,18 @@ export default function IlanlarYonetimiPage() {
     setToast({ message, type });
   };
 
+  const loadJobs = useCallback(async () => {
+    try {
+      const data = await jobService.getAllJobs();
+      setJobs(Array.isArray(data) ? data : []);
+    } catch (error) {
+      console.error('Error loading jobs:', error);
+      showToast(error.message || "İlanlar yüklenirken hata oluştu", "error");
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     const checkAdmin = () => {
       if (typeof window !== 'undefined') {
@@ -64,20 +76,7 @@ export default function IlanlarYonetimiPage() {
 
     checkAdmin();
     loadJobs();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [router]);
-
-  const loadJobs = async () => {
-    try {
-      const data = await jobService.getAllJobs();
-      setJobs(Array.isArray(data) ? data : []);
-    } catch (error) {
-      console.error('Error loading jobs:', error);
-      showToast(error.message || "İlanlar yüklenirken hata oluştu", "error");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  }, [router, loadJobs]);
 
   const resetForm = () => {
     setCurrentJob({
@@ -182,7 +181,7 @@ export default function IlanlarYonetimiPage() {
     console.log('handleDelete called with job:', job); // Debug
     setConfirmDialog({
       title: "İlanı Sil",
-      message: `"${job.title}" ilanını silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.`,
+      message: `${job.title} ilanını silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.`,
       onConfirm: async () => {
         console.log('Delete confirmed for job ID:', job.id); // Debug
         setConfirmDialog(null);

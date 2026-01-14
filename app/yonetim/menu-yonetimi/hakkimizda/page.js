@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Toast from "../../../components/Toast";
 import ConfirmDialog from "../../../components/ConfirmDialog";
@@ -21,29 +21,7 @@ export default function HakkimizdaYonetimiPage() {
     setToast({ message, type });
   };
 
-  useEffect(() => {
-    const checkAdmin = () => {
-      if (typeof window !== 'undefined') {
-        const role = localStorage.getItem('userRole');
-        const token = localStorage.getItem('authToken');
-        
-        if (!token) {
-          router.push('/giris');
-          return;
-        }
-        
-        if (role !== 'ADMIN') {
-          router.push('/');
-          return;
-        }
-      }
-    };
-
-    checkAdmin();
-    loadContent();
-  }, [router]);
-
-  const loadContent = async () => {
+  const loadContent = useCallback(async () => {
     try {
       const data = await aboutService.getAboutContent();
       console.log('Loaded content:', data); // Debug
@@ -71,7 +49,29 @@ export default function HakkimizdaYonetimiPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    const checkAdmin = () => {
+      if (typeof window !== 'undefined') {
+        const role = localStorage.getItem('userRole');
+        const token = localStorage.getItem('authToken');
+        
+        if (!token) {
+          router.push('/giris');
+          return;
+        }
+        
+        if (role !== 'ADMIN') {
+          router.push('/');
+          return;
+        }
+      }
+    };
+
+    checkAdmin();
+    loadContent();
+  }, [router, loadContent]);
 
   const handleSave = async () => {
     // Validation
